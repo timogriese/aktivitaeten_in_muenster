@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.core.config import settings
 from app.models.activity import ActivityCreate
@@ -97,7 +97,7 @@ class ScraperService:
             return []
 
         logger.info("Search for %r returned %d candidate page(s)", query, len(candidates))
-        scraped_at = datetime.now(timezone.utc).isoformat()
+        scraped_at = datetime.now(UTC).isoformat()
 
         results = await asyncio.gather(
             *(self._extract_one(candidate, scraped_at) for candidate in candidates),
