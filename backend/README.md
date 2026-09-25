@@ -68,7 +68,7 @@ Crawled English categories are mapped to the frontend's German labels.
 
 `POST /api/routing/walking` accepts the current location and a maximum walking
 time in minutes. The service runs one shared Dijkstra search and evaluates all
-destinations from `stuff.csv`:
+activities in the database:
 
 ```json
 {
@@ -77,13 +77,12 @@ destinations from `stuff.csv`:
 }
 ```
 
-The response contains only destinations reachable within the time limit. Each
-entry includes the destination and its walking duration; unreachable
-destinations are omitted.
+The response contains only activities reachable within the time limit, as
+`activityId` and `durationSeconds`, sorted by walking time. `/api/explore` builds
+on this.
 
-`POST /api/routing/walking/test` runs the Münster test request using the
-destinations in `stuff.csv` and the Münster origin configured in the service.
-Override the fixture with `ROUTING_DESTINATIONS_FILE` when needed.
+`POST /api/routing/walking/test` runs the same search from the test origin
+configured in the service (near the main station, 30 minutes).
 
 `POST /api/python/{service}` forwards a JSON request to the URL configured for
 that service. Configure services with Spring properties or environment
