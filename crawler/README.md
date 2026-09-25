@@ -7,7 +7,7 @@ Findet Aktivitäten in Münster im Web (Suche + Crawling + KI-Extraktion) und be
 Voraussetzung: [uv](https://docs.astral.sh/uv/).
 
 ```bash
-make sync
+make install
 ```
 
 entspricht `uv sync` und installiert alle Dependencies in `crawler/.venv`.
@@ -28,11 +28,11 @@ Umgebungsvariable überschreiben (`CRAWLER_`-Prefix, siehe `app/core/config.py`)
 Zwei Terminals:
 
 ```bash
-make backend   # Mock-Backend auf Port 8001
+make mock-backend   # Mock-Backend auf Port 8001
 ```
 
 ```bash
-make crawler   # Crawler-Service auf Port 8000
+make dev            # Crawler-Service auf Port 8000
 ```
 
 Crawl manuell auslösen:
@@ -43,7 +43,9 @@ make crawl     # POST /crawl
 
 Der Crawler läuft zusätzlich automatisch alle 30 Minuten im Hintergrund (siehe `app/scheduler.py`, Intervall konfigurierbar über `CRAWLER_CRAWL_INTERVAL_MINUTES`).
 
-Alle Make-Targets: `make help`.
+Alle Make-Targets: `make help`. Gleiches Schema (`install`/`dev`/`lint`) auch im [`frontend/`](../frontend/Makefile)
+— vom Repo-Root aus lassen sich alle Bereiche zusammen starten/installen/linten, siehe
+[`../Makefile`](../Makefile).
 
 ## Architektur
 
