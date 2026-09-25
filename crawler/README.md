@@ -18,7 +18,7 @@ entspricht `uv sync` und installiert alle Dependencies in `crawler/.venv`.
 cp .env.example .env
 ```
 
-und die echten Werte in `crawler/.env` eintragen (Firecrawl-Key, LLM-Zugangsdaten). `.env` ist
+und die echten Werte in `crawler/.env` eintragen (Tavily-Key, LLM-Zugangsdaten). `.env` ist
 per `.gitignore` ausgeschlossen und wird nie committet — `.env.example` (ohne echte Werte) ist
 die einzige Datei davon, die im Repo landet. Alle Settings lassen sich zusätzlich per
 Umgebungsvariable überschreiben (`CRAWLER_`-Prefix, siehe `app/core/config.py`).
@@ -56,11 +56,12 @@ app/                     # Crawler-Service (Port 8000)
   models/
     activity.py             # Pydantic-Modelle: die "Aktivität" nach unserem Schema
   services/
-    query_service.py          # denkt sich die naechste Suchanfrage aus
-    scraper_service.py         # Suche/Crawl/Extraktion -> orchestriert die Firecrawl-Pipeline
-    firecrawl_client.py         # schlanke Firecrawl-REST-Client (Search + JSON-Extraktion)
-    backend_client.py           # ruft die Backend-CRUD-API auf
-    crawl_service.py             # orchestriert: Query holen, scrapen, ans Backend pushen
+    query_service.py          # denkt sich per LLM die naechste Suchanfrage aus
+    llm_client.py               # schlanker Client fuer die MSHack AI Gateway (OpenAI-kompatibel)
+    scraper_service.py           # Suche+Content (Tavily) + Extraktion (eigenes LLM)
+    tavily_client.py               # schlanker Tavily-Client (Search inkl. Seiteninhalt)
+    backend_client.py             # ruft die Backend-CRUD-API auf
+    crawl_service.py               # orchestriert: Query holen, scrapen, ans Backend pushen
   api/
     routes.py                  # GET /health, POST /crawl
 
@@ -83,15 +84,22 @@ Quelle der Wahrheit ist [`app/models/activity.py`](app/models/activity.py). Kurz
 | `opening_hours.start` / `.end` | Uhrzeit — exakter Termin bei fixem Datum, sonst Tagesrahmen (z.B. Öffnungszeiten, Tageslicht-Fenster) |
 | `source.type` | `scraped` (klassisch gefunden), `user_submitted`, oder `ai_suggested` (KI hat eine Möglichkeit selbst erkannt, z.B. "schöner Bach") |
 
-## Scraper-Teil: `services/scraper_service.py` + `services/firecrawl_client.py`
+## Scraper-Teil: `services/scraper_service.py` + `services/tavily_client.py` + `services/llm_client.py`
 
-`ScraperService.scrape(query)` ist der Einstiegspunkt und ruft Firecrawl direkt über die REST-API auf (Client: `firecrawl_client.py`). Pipeline:
+`ScraperService.scrape(query)` ist der Einstiegspunkt. Pipeline:
 
-1. **Search** — `POST /v1/search` für `query` (Default: `CRAWLER_DEFAULT_QUERY`) liefert Kandidaten-URLs.
-2. **Extraktion** — je URL `POST /v2/scrape` mit einem `json`-Format-Objekt: Firecrawl extrahiert serverseitig (LLM-basiert) genau ein Objekt gemäß Schema. Das Schema wird per `ActivityCreate.model_json_schema()` aus dem Pydantic-Modell generiert, sodass Extraktion und Validierung nie auseinanderlaufen.
-3. **Validierung** — das JSON wird per `_parse_llm_result()` gegen `ActivityCreate` validiert.
+1. **Search** — Tavily `POST /search` für `query` (Default: `CRAWLER_DEFAULT_QUERY`) mit `include_raw_content: markdown` liefert Kandidaten-URLs **inklusive** ihres Seiteninhalts in einem einzigen Call (kein separater Scrape-Schritt/-Kosten nötig).
+2. **Extraktion** — das Markdown geht an unser eigenes LLM (`llm_client.py`, MSHack Gateway, kostenloses Modell) mit einem Prompt, der genau ein Objekt gemäß Schema zurückgibt (`response_format: json_object`). Das Schema wird per `ActivityCreate.model_json_schema()` aus dem Pydantic-Modell generiert, sodass Extraktion und Validierung nie auseinanderlaufen.
+3. **Validierung** — das JSON wird per `_parse_llm_result()` gegen `ActivityCreate` validiert. Müll-Ergebnisse (leeres `{}`, Platzhalter-Titel wie "Not Found") werden vorher schon verworfen.
 
-Die Extraktion läuft parallel (Semaphore = `CRAWLER_FIRECRAWL_CONCURRENCY`, dem Account-Limit). Es wird **keine JSON-Datei** geschrieben: Die Objekte existieren nur im Speicher und werden erst nach erfolgreicher Validierung ans Backend gepusht. Eine kaputte Extraktion wirft eine `pydantic.ValidationError`, wird geloggt und übersprungen — nur „nicht kaputte" Aktivitäten landen in der Datenbank, eine einzelne schlechte Seite lässt den Rest des Crawls stehen.
+Damit läuft pro Crawl-Zyklus nur noch **ein** Tavily-Call (statt Search + einzelne Scrapes), bei 1000 kostenlosen Credits/Monat. Die eigentliche LLM-Extraktion läuft über das kostenlose Gateway-Modell, parallel (Semaphore = `CRAWLER_EXTRACTION_CONCURRENCY`). Es wird **keine JSON-Datei** geschrieben: Die Objekte existieren nur im Speicher und werden erst nach erfolgreicher Validierung ans Backend gepusht. Eine kaputte Extraktion wird geloggt und übersprungen — nur „nicht kaputte" Aktivitäten landen in der Datenbank, eine einzelne schlechte Seite lässt den Rest des Crawls stehen.
+
+## Query-Planung: `services/query_service.py` + `services/llm_client.py`
+
+`QueryService.next_query()` fragt das LLM (MSHack AI Gateway, `CRAWLER_LLM_MODEL`, Default
+`DeepSeek-V4-Flash`, OpenAI-kompatibel) nach einer neuen Suchanfrage für Aktivitäten in Münster.
+Schlägt der Call fehl (fehlender Key, Netzwerkfehler, ...), fällt es auf einen festen
+Beispiel-Pool zurück, damit ein Crawl-Zyklus trotzdem laufen kann.
 
 ## Mock-Backend ablösen
 

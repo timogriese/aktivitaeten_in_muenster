@@ -28,7 +28,7 @@ class CrawlService:
         self._query_service = query_service or QueryService()
 
     async def run(self) -> dict:
-        query = self._query_service.next_query()
+        query = await self._query_service.next_query()
         found = await self._scraper_service.scrape(query)
         created = await self._backend_client.push_activities(found)
         logger.info(

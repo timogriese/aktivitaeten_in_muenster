@@ -10,18 +10,18 @@ class Settings(BaseSettings):
     backend_url: str = "http://localhost:8001"
     crawl_interval_minutes: int = 30
 
-    # Firecrawl (search + schema-guided extraction).
-    firecrawl_api_key: str = ""
-    firecrawl_api_url: str = "https://api.firecrawl.dev"
+    # Tavily (search + page content in one call). Free tier: 1000 credits/month.
+    tavily_api_key: str = ""
+    tavily_api_url: str = "https://api.tavily.com"
     default_query: str = "activities and events in Münster"
-    firecrawl_search_limit: int = 5
-    # Account concurrency limit for parallel scrape/extract jobs (see `firecrawl --status`).
-    firecrawl_concurrency: int = 2
+    tavily_search_limit: int = 5
+    # Bounds parallel LLM extraction calls per crawl cycle.
+    extraction_concurrency: int = 3
 
-    # Locally hosted LLM (used by QueryService to plan search queries).
+    # MSHack AI gateway, OpenAI-compatible (used by QueryService to plan search queries).
     llm_api_key: str = ""
-    llm_base_url: str = ""
-    llm_model: str = ""
+    llm_base_url: str = "https://mshack.items.services/v1"
+    llm_model: str = "DeepSeek-V4-Flash"
 
     model_config = SettingsConfigDict(
         env_prefix="CRAWLER_", env_file=_ENV_FILE, env_file_encoding="utf-8"
