@@ -9,6 +9,9 @@ const selected = computed(() => activities.value[selectedIndex.value] ?? null)
 const reviewedIds = ref<string[]>([])
 const likedIds = ref<string[]>([])
 const searched = ref(false)
+const mobileSettingsOpen = ref(true)
+const settingsToggle = ref<HTMLButtonElement>()
+const settingsPanel = ref<HTMLElement>()
 const shortlist = computed(() => activities.value.filter(activity => likedIds.value.includes(activity.id)))
 const roundComplete = computed(() => searched.value && activities.value.length > 0 && (likedIds.value.length >= 3 || reviewedIds.value.length === activities.value.length))
 const chosenId = ref<string | null>(null)
@@ -46,6 +49,10 @@ async function search(request: ExploreRequest) {
     detailActivity.value = null
     ++roundNumber.value
     searched.value = true
+    if (settingsToggle.value?.getClientRects().length && settingsPanel.value?.contains(document.activeElement)) {
+      settingsToggle.value.focus()
+    }
+    mobileSettingsOpen.value = false
   }
   catch {
     if (version === searchVersion) searchError.value = 'Die Aktivitäten konnten nicht geladen werden. Bitte versuche die Suche erneut.'
@@ -126,8 +133,14 @@ onBeforeUnmount(() => { ++searchVersion })
             <div class="progress-slots" aria-hidden="true"><span v-for="index in 3" :key="index" :class="{ filled: index <= likedIds.length }"><AppIcon v-if="index <= likedIds.length" name="check" :size="14" /><span v-else>{{ index }}</span></span></div>
           </div>
         </div>
-        <aside class="search-sidebar" aria-label="Aktivitäten suchen">
-          <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
+        <aside class="search-sidebar" :class="{ 'search-sidebar--collapsed': !mobileSettingsOpen }" aria-label="Aktivitäten suchen">
+          <button ref="settingsToggle" class="settings-toggle" type="button" :aria-expanded="mobileSettingsOpen" aria-controls="search-settings" @click="mobileSettingsOpen = !mobileSettingsOpen">
+            Einstellungen
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          <div id="search-settings" ref="settingsPanel" class="search-settings">
+            <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
+          </div>
         </aside>
         <section class="results-section" :class="{ 'results-section--with-selection': selected }" :aria-labelledby="searched ? 'results-heading' : undefined" :aria-label="searched ? undefined : 'Entdecken'" :aria-busy="loading">
           <div class="sr-only" role="status" aria-atomic="true">{{ announcement }}</div>
@@ -157,7 +170,7 @@ onBeforeUnmount(() => { ++searchVersion })
               <ActivityDecision :key="roundNumber" :activity="selected" :disabled="loading" @decide="decide" @details="openDetails(selected)" />
               <p class="swipe-hint">Nach links: nicht für mich. Nach rechts: spannend.<br>Oder entscheide mit den Buttons.</p>
             </template>
-            <div v-else-if="!searched">
+            <div v-else-if="!searched" class="welcome-view">
               <div class="welcome-card">
                 <img :src="aaseeImage.imageUrl" :alt="aaseeImage.imageAlt" class="welcome-landscape">
                 <div class="welcome-content"><span class="welcome-label"><AppIcon name="pin" :size="15" />MÜNSTER, DEINE STADT</span><h3>Mal kurz<br><em>rauskommen.</em></h3><p>Was klingt nach deiner Auszeit?<br>Finde drei Ideen und wähle deinen Favoriten.</p><span class="welcome-footnote"><span></span>Natur, Kultur und kleine Abenteuer</span></div>
