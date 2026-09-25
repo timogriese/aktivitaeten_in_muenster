@@ -21,6 +21,7 @@ const categoryIcon = computed(() => ({ 'Natur & draußen': 'leaf', 'Kunst & Kult
         <span v-if="activity.travelTimeMinutes != null"><AppIcon name="arrow" :size="16" />{{ activity.travelTimeMinutes }} Min. Anreise · Beispiel</span>
       </div>
       <button class="primary-button card-more" type="button" @click="$emit('details')">Mehr erfahren <AppIcon name="arrow" :size="18" /></button>
+      <slot name="actions" />
     </div>
   </article>
 </template>
