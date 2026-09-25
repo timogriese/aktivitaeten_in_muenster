@@ -24,7 +24,7 @@ class CrawlService:
         self._backend_client = backend_client or BackendClient()
 
     async def run(self, query: str | None = None) -> dict:
-        found = self._scraper_service.scrape(query)
+        found = await self._scraper_service.scrape(query)
         created = await self._backend_client.push_activities(found)
         logger.info(
             "Crawl finished: query=%r found=%d created=%d", query, len(found), len(created)

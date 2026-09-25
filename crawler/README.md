@@ -12,6 +12,10 @@ make sync
 
 entspricht `uv sync` und installiert alle Dependencies in `crawler/.venv`.
 
+Der Firecrawl-API-Key wird automatisch aus `crawler/apicode.txt` gelesen und kann via
+`CRAWLER_FIRECRAWL_API_KEY` überschrieben werden (Base-URL: `CRAWLER_FIRECRAWL_API_URL`,
+Default-Suchbegriff: `CRAWLER_DEFAULT_QUERY`).
+
 ## Starten
 
 Zwei Terminals:
@@ -45,7 +49,8 @@ app/                     # Crawler-Service (Port 8000)
   models/
     activity.py             # Pydantic-Modelle: die "Aktivität" nach unserem Schema
   services/
-    scraper_service.py       # Suche/Crawl/KI-Extraktion -> hier arbeitet der Scraper-Teil
+    scraper_service.py       # Suche/Crawl/Extraktion -> orchestriert die Firecrawl-Pipeline
+    firecrawl_client.py       # schlanke Firecrawl-REST-Client (Search + JSON-Extraktion)
     backend_client.py         # ruft die Backend-CRUD-API auf
     crawl_service.py           # orchestriert: scrapen, dann ans Backend pushen
   api/
@@ -70,19 +75,15 @@ Quelle der Wahrheit ist [`app/models/activity.py`](app/models/activity.py). Kurz
 | `opening_hours.start` / `.end` | Uhrzeit — exakter Termin bei fixem Datum, sonst Tagesrahmen (z.B. Öffnungszeiten, Tageslicht-Fenster) |
 | `source.type` | `scraped` (klassisch gefunden), `user_submitted`, oder `ai_suggested` (KI hat eine Möglichkeit selbst erkannt, z.B. "schöner Bach") |
 
-## Für den Scraper-Teil: `services/scraper_service.py`
+## Scraper-Teil: `services/scraper_service.py` + `services/firecrawl_client.py`
 
-`ScraperService.scrape(query)` ist der Einstiegspunkt und aktuell gemockt: `_mock_llm_results()` liefert zwei feste JSON-Dicts (so, wie sie später vom LLM kommen würden), die über `_parse_llm_result()` gegen `ActivityCreate` validiert werden:
+`ScraperService.scrape(query)` ist der Einstiegspunkt und ruft Firecrawl direkt über die REST-API auf (Client: `firecrawl_client.py`). Pipeline:
 
-```python
-def _parse_llm_result(self, raw: dict) -> ActivityCreate:
-    return ActivityCreate.model_validate(raw)
-```
+1. **Search** — `POST /v1/search` für `query` (Default: `CRAWLER_DEFAULT_QUERY`) liefert Kandidaten-URLs.
+2. **Extraktion** — je URL `POST /v2/scrape` mit einem `json`-Format-Objekt: Firecrawl extrahiert serverseitig (LLM-basiert) genau ein Objekt gemäß Schema. Das Schema wird per `ActivityCreate.model_json_schema()` aus dem Pydantic-Modell generiert, sodass Extraktion und Validierung nie auseinanderlaufen.
+3. **Validierung** — das JSON wird per `_parse_llm_result()` gegen `ActivityCreate` validiert.
 
-Das ist die Stelle, an der später echtes LLM-JSON reinkommt. Beim Ersetzen von `_mock_llm_results` (bzw. der ganzen `scrape`-Logik) durch die echte Suche/Crawl/LLM-Pipeline:
-
-- `scrape()` muss weiterhin `list[ActivityCreate]` zurückgeben — alles danach (Backend-Push, API, Scheduler) bleibt unverändert.
-- Bei ungültigem LLM-JSON wirft `_parse_llm_result` eine `pydantic.ValidationError` — das ist gewollt, damit kaputte Extraktionen auffallen statt still falsche Daten zu speichern.
+Die Extraktion läuft parallel (Semaphore = `CRAWLER_FIRECRAWL_CONCURRENCY`, dem Account-Limit). Es wird **keine JSON-Datei** geschrieben: Die Objekte existieren nur im Speicher und werden erst nach erfolgreicher Validierung ans Backend gepusht. Eine kaputte Extraktion wirft eine `pydantic.ValidationError`, wird geloggt und übersprungen — nur „nicht kaputte" Aktivitäten landen in der Datenbank, eine einzelne schlechte Seite lässt den Rest des Crawls stehen.
 
 ## Mock-Backend ablösen
 
