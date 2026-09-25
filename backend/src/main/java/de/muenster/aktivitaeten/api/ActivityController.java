@@ -19,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -34,7 +33,7 @@ public class ActivityController {
 
     @GetMapping
     public List<Activity> list() {
-        return activityRepository.findAll();
+        return activityRepository.findAllWithTags();
     }
 
     @PostMapping
@@ -60,12 +59,12 @@ public class ActivityController {
     }
 
     @GetMapping("/{id}")
-    public Activity get(@PathVariable UUID id) {
+    public Activity get(@PathVariable String id) {
         return findActivity(id);
     }
 
     @PutMapping("/{id}")
-    public Activity update(@PathVariable UUID id,
+    public Activity update(@PathVariable String id,
                            @Valid @RequestBody ActivityUpdateRequest request) {
         Activity activity = findActivity(id);
         activity.update(
@@ -82,7 +81,7 @@ public class ActivityController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         if (!activityRepository.existsById(id)) {
             throw new ResponseStatusException(NOT_FOUND, "Activity not found");
         }
@@ -90,7 +89,7 @@ public class ActivityController {
         return ResponseEntity.noContent().build();
     }
 
-    private Activity findActivity(UUID id) {
+    private Activity findActivity(String id) {
         return activityRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Activity not found"));
     }

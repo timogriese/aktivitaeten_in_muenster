@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "activities")
@@ -24,7 +23,7 @@ public class Activity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(length = 36, nullable = false, updatable = false)
-    private UUID id;
+    private String id;
 
     @Column(nullable = false)
     private String title;
@@ -106,7 +105,7 @@ public class Activity {
         updatedAt = Instant.now();
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 

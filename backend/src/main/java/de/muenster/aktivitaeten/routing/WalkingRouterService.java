@@ -21,8 +21,12 @@ import java.nio.file.Path;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class WalkingRouterService {
@@ -84,6 +88,64 @@ public class WalkingRouterService {
         return new WalkingRouteRequest(
                 new Coordinate(51.952248, 7.639208),
                 30.0);
+    }
+
+    public synchronized List<String> suggest(WalkingSuggestionRequest request) {
+        WalkingRouteResponse routes = route(new WalkingRouteRequest(
+                request.origin(), request.maxWalkingMinutes()));
+        List<String> reachableIds = routes.routes().stream()
+                .map(WalkingRouteResponse.Result::activityId)
+                .toList();
+        if (reachableIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Activity> candidates = activityRepository.findAllById(reachableIds);
+        WalkingSuggestionRequest.PreferenceFilter preferences = request.preferences();
+        List<Activity> filtered = candidates.stream()
+                .filter(activity -> matches(activity, preferences))
+                .toList();
+
+        List<Activity> shuffled = new ArrayList<>(filtered);
+        Collections.shuffle(shuffled);
+        int limit = preferences != null && preferences.limit() != null
+                ? Math.min(preferences.limit(), shuffled.size())
+                : shuffled.size();
+        return shuffled.subList(0, limit).stream()
+                .map(Activity::getId)
+                .toList();
+    }
+
+    private boolean matches(Activity activity, WalkingSuggestionRequest.PreferenceFilter preferences) {
+        if (preferences == null) {
+            return true;
+        }
+        if (preferences.category() != null
+                && !preferences.category().equalsIgnoreCase(activity.getCategory())) {
+            return false;
+        }
+        if (preferences.tags() != null && !preferences.tags().isEmpty()) {
+            Set<String> requestedTags = preferences.tags().stream()
+                    .filter(tag -> tag != null)
+                    .map(tag -> tag.toLowerCase(Locale.ROOT))
+                    .collect(Collectors.toSet());
+            Set<String> activityTags = activity.getTags().stream()
+                    .map(tag -> tag.toLowerCase(Locale.ROOT))
+                    .collect(Collectors.toSet());
+            if (!activityTags.containsAll(requestedTags)) {
+                return false;
+            }
+        }
+        if (preferences.groupType() != null
+                && preferences.groupType() != activity.getGroupType()) {
+            return false;
+        }
+        if (preferences.maxPriceEur() != null
+                && (activity.getPriceEur() == null
+                    || activity.getPriceEur() > preferences.maxPriceEur())) {
+            return false;
+        }
+        return true;
     }
 
     private GraphHopper graph() {
