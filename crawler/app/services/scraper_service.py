@@ -1,78 +1,115 @@
 from __future__ import annotations
 
-from datetime import datetime
+import asyncio
+import logging
+from datetime import datetime, timezone
 
+from app.core.config import settings
 from app.models.activity import ActivityCreate
+from app.services.firecrawl_client import FirecrawlClient
+
+logger = logging.getLogger(__name__)
+
+# Schema handed to Firecrawl for extraction. Generated from the Pydantic model so the
+# extraction target and the validation target can never drift apart.
+ACTIVITY_SCHEMA = ActivityCreate.model_json_schema()
+
+EXTRACT_PROMPT = """\
+Extract exactly ONE activity or event taking place in Münster, Germany from this page.
+
+Field rules:
+- title: the concrete name of the activity/event.
+- description: 1-3 sentences describing what it is and what makes it appealing.
+- category: a short category such as "festival", "sport", "culture", "market", "nature", "music".
+- tags: 2-6 short lowercase tags.
+- location: the venue. address = place/street + city; lat/lon = decimal coordinates of that place.
+- group_type: "joinable_group" if it is a club, association or recurring meetup you can join; otherwise "self_organized".
+- opening_hours.date: a single ISO date "YYYY-MM-DD" only for a one-time event, else null.
+- opening_hours.start / end: opening/closing time as "HH:MM" (24h). If unknown, use a sensible daytime window.
+- price_eur: entry price in EUR; 0.0 if free / no admission fee.
+- source: set to {"type": "scraped"}; the pipeline fills url and scraped_at.
+
+If the page is a generic listing or overview rather than a single activity, pick the single
+most prominent, concrete activity described on it. Use only facts present on the page.
+"""
 
 
 class ScraperService:
-    """Finds activities on the web and turns them into `ActivityCreate` objects.
+    """Finds activities on the web and turns them into in-memory `ActivityCreate` objects.
 
-    Real pipeline (to be implemented here):
-      1. run a search / crawl for `query` (or a query the service comes up with itself)
-      2. feed the found pages to a local LLM and have it extract structured data as JSON
-      3. validate that JSON into `ActivityCreate` via `_parse_llm_result`
+    Real pipeline:
+      1. Firecrawl `search` for `query` -> candidate page URLs.
+      2. Firecrawl `scrape` (v2, `json` format) per URL -> one structured object per page
+         (this is the "LLM" step, now done server-side by Firecrawl against `ACTIVITY_SCHEMA`).
+      3. validate that JSON into `ActivityCreate` via `_parse_llm_result`.
 
-    `scrape()` is mocked for now: it returns two hardcoded results, routed through
-    `_parse_llm_result` to show the JSON -> pydantic step that will later sit between
-    the LLM output and the rest of the pipeline. `_mock_llm_results` is the seam to
-    replace with real search+crawl+LLM calls; `scrape`'s signature and return type
-    should stay stable so nothing downstream needs to change.
+    `scrape()` returns `list[ActivityCreate]` and never writes JSON to disk; the objects are
+    in memory and are pushed to the backend only once they validate. A broken extraction
+    raises `pydantic.ValidationError`, which the caller logs and skips - so only "not broken"
+    activities reach the database and one bad page does not abort the rest of the batch.
     """
 
-    def scrape(self, query: str | None = None) -> list[ActivityCreate]:
-        raw_results = self._mock_llm_results(query)
-        return [self._parse_llm_result(raw) for raw in raw_results]
+    def __init__(self, firecrawl_client: FirecrawlClient | None = None) -> None:
+        self._firecrawl_client = firecrawl_client or FirecrawlClient()
+        self._semaphore = asyncio.Semaphore(settings.firecrawl_concurrency)
+
+    async def scrape(self, query: str | None = None) -> list[ActivityCreate]:
+        query = query or settings.default_query
+        candidates = await self._firecrawl_client.search(query, limit=settings.firecrawl_search_limit)
+        if not candidates:
+            logger.info("Search for %r returned no candidate pages", query)
+            return []
+
+        logger.info("Search for %r returned %d candidate page(s)", query, len(candidates))
+        scraped_at = datetime.now(timezone.utc).isoformat()
+
+        results = await asyncio.gather(
+            *(self._extract_one(candidate, scraped_at) for candidate in candidates),
+            return_exceptions=True,
+        )
+
+        activities: list[ActivityCreate] = []
+        for candidate, result in zip(candidates, results):
+            url = candidate.get("url")
+            if isinstance(result, Exception):
+                logger.warning("Skipping %s (extraction failed): %s", url, result)
+            elif result is None:
+                logger.warning("Skipping %s (no extractable activity)", url)
+            else:
+                activities.append(result)
+
+        logger.info(
+            "Crawl for %r: %d valid activit(ies) from %d page(s)",
+            query,
+            len(activities),
+            len(candidates),
+        )
+        return activities
+
+    async def _extract_one(self, candidate: dict, scraped_at: str) -> ActivityCreate | None:
+        async with self._semaphore:
+            url = candidate["url"]
+            raw = await self._firecrawl_client.extract(url, schema=ACTIVITY_SCHEMA, prompt=EXTRACT_PROMPT)
+            if not isinstance(raw, dict) or not raw:
+                return None
+            self._stamp_source(raw, url, scraped_at)
+            return self._parse_llm_result(raw)
+
+    def _stamp_source(self, raw: dict, url: str, scraped_at: str) -> None:
+        """Force the source block to accurate pipeline values, independent of the model output."""
+        source = raw.get("source")
+        if not isinstance(source, dict):
+            source = {}
+        source["type"] = "scraped"
+        source["url"] = url
+        source["scraped_at"] = scraped_at
+        raw["source"] = source
 
     def _parse_llm_result(self, raw: dict) -> ActivityCreate:
-        """Validates one JSON object (shaped like the LLM's output) into an ActivityCreate.
+        """Validates one extracted JSON object into an ActivityCreate.
 
-        Raises `pydantic.ValidationError` if the JSON doesn't match the schema -
-        callers/tests should expect and handle that once real LLM output is wired in.
+        Raises `pydantic.ValidationError` if it does not match the schema, so broken
+        extractions are skipped by the caller instead of being stored.
         """
         return ActivityCreate.model_validate(raw)
 
-    def _mock_llm_results(self, query: str | None) -> list[dict]:
-        now = datetime.utcnow().isoformat()
-        return [
-            {
-                "title": "Offenes Schachtraining",
-                "description": "Wöchentliches offenes Training, Einsteiger willkommen.",
-                "category": "sport",
-                "tags": ["schach", "verein"],
-                "location": {
-                    "address": "Schachclub Münster, Warendorfer Str. 1, Münster",
-                    "lat": 51.9625,
-                    "lon": 7.6256,
-                },
-                "group_type": "joinable_group",
-                "opening_hours": {"date": None, "start": "19:00", "end": "21:00"},
-                "price_eur": 0.0,
-                "source": {
-                    "type": "scraped",
-                    "url": "https://example.org/schachclub-muenster",
-                    "scraped_at": now,
-                    "extraction_confidence": 0.5,
-                },
-            },
-            {
-                "title": "Schöner Bach zum Entspannen",
-                "description": "Ruhiger Bachlauf, gut für einen spontanen Spaziergang.",
-                "category": "nature",
-                "tags": ["natur", "spaziergang"],
-                "location": {
-                    "address": "Aasee-Umgebung, Münster",
-                    "lat": 51.9506,
-                    "lon": 7.6106,
-                },
-                "group_type": "self_organized",
-                "opening_hours": {"date": None, "start": "08:00", "end": "20:00"},
-                "price_eur": 0.0,
-                "source": {
-                    "type": "ai_suggested",
-                    "url": None,
-                    "scraped_at": now,
-                    "extraction_confidence": 0.3,
-                },
-            },
-        ]
