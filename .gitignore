@@ -11,7 +11,7 @@ venv/
 # Env files
 .env
 .env.*
-crawler/apicode.txt
+!.env.example
 
 # Node (frontend)
 node_modules/

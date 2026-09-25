@@ -1,31 +1,8 @@
 from __future__ import annotations
 
-import logging
-from pathlib import Path
-
 import httpx
 
 from app.core.config import settings
-
-logger = logging.getLogger(__name__)
-
-# apicode.txt lives in the crawler project root (two levels up from app/services/).
-_API_KEY_FILE = Path(__file__).resolve().parents[2] / "apicode.txt"
-
-
-def _resolve_api_key() -> str:
-    """Resolve the Firecrawl API key: env/config first, then apicode.txt."""
-    key = settings.firecrawl_api_key.strip()
-    if key:
-        return key
-    if _API_KEY_FILE.exists():
-        key = _API_KEY_FILE.read_text().strip()
-        if key:
-            logger.info("Using Firecrawl API key from %s", _API_KEY_FILE.name)
-            return key
-    raise RuntimeError(
-        "No Firecrawl API key. Set CRAWLER_FIRECRAWL_API_KEY or put the key in apicode.txt."
-    )
 
 
 class FirecrawlClient:
@@ -39,12 +16,15 @@ class FirecrawlClient:
     """
 
     def __init__(self, api_key: str | None = None, base_url: str | None = None) -> None:
-        self._api_key = (api_key or "").strip()
+        self._api_key = (api_key or settings.firecrawl_api_key).strip()
         self._base_url = (base_url or settings.firecrawl_api_url).rstrip("/")
 
     def _headers(self) -> dict[str, str]:
-        if not self._api_key:  # resolve lazily so a missing key fails at crawl time, not import
-            self._api_key = _resolve_api_key()
+        if not self._api_key:
+            raise RuntimeError(
+                "No Firecrawl API key. Set CRAWLER_FIRECRAWL_API_KEY in crawler/.env "
+                "(copy crawler/.env.example)."
+            )
         return {"Authorization": f"Bearer {self._api_key}", "Content-Type": "application/json"}
 
     async def search(self, query: str, limit: int = 5) -> list[dict]:

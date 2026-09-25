@@ -12,9 +12,16 @@ make sync
 
 entspricht `uv sync` und installiert alle Dependencies in `crawler/.venv`.
 
-Der Firecrawl-API-Key wird automatisch aus `crawler/apicode.txt` gelesen und kann via
-`CRAWLER_FIRECRAWL_API_KEY` überschrieben werden (Base-URL: `CRAWLER_FIRECRAWL_API_URL`,
-Default-Suchbegriff: `CRAWLER_DEFAULT_QUERY`).
+### Secrets
+
+```bash
+cp .env.example .env
+```
+
+und die echten Werte in `crawler/.env` eintragen (Firecrawl-Key, LLM-Zugangsdaten). `.env` ist
+per `.gitignore` ausgeschlossen und wird nie committet — `.env.example` (ohne echte Werte) ist
+die einzige Datei davon, die im Repo landet. Alle Settings lassen sich zusätzlich per
+Umgebungsvariable überschreiben (`CRAWLER_`-Prefix, siehe `app/core/config.py`).
 
 ## Starten
 
@@ -49,10 +56,11 @@ app/                     # Crawler-Service (Port 8000)
   models/
     activity.py             # Pydantic-Modelle: die "Aktivität" nach unserem Schema
   services/
-    scraper_service.py       # Suche/Crawl/Extraktion -> orchestriert die Firecrawl-Pipeline
-    firecrawl_client.py       # schlanke Firecrawl-REST-Client (Search + JSON-Extraktion)
-    backend_client.py         # ruft die Backend-CRUD-API auf
-    crawl_service.py           # orchestriert: scrapen, dann ans Backend pushen
+    query_service.py          # denkt sich die naechste Suchanfrage aus
+    scraper_service.py         # Suche/Crawl/Extraktion -> orchestriert die Firecrawl-Pipeline
+    firecrawl_client.py         # schlanke Firecrawl-REST-Client (Search + JSON-Extraktion)
+    backend_client.py           # ruft die Backend-CRUD-API auf
+    crawl_service.py             # orchestriert: Query holen, scrapen, ans Backend pushen
   api/
     routes.py                  # GET /health, POST /crawl
 
@@ -62,7 +70,7 @@ mock_backend/            # Platzhalter-Backend (Port 8001), bis das echte Backen
   main.py                    # CRUD: POST/GET/GET-by-id/PUT/DELETE /activities
 ```
 
-`main.py` -> `api/routes.py` -> `services/crawl_service.py` -> `services/scraper_service.py` + `services/backend_client.py`. Der Scheduler (`scheduler.py`) ruft denselben `crawl_service.run()` auf wie der `/crawl`-Endpoint — ein manueller Trigger und ein Cron-Lauf verhalten sich identisch.
+`main.py` -> `api/routes.py` -> `services/crawl_service.py` -> `services/query_service.py` + `services/scraper_service.py` + `services/backend_client.py`. Der Scheduler (`scheduler.py`) ruft denselben `crawl_service.run()` auf wie der `/crawl`-Endpoint — ein manueller Trigger und ein Cron-Lauf verhalten sich identisch. `/crawl` nimmt bewusst keinen Input entgegen: `CrawlService` holt sich die Suchanfrage selbst von `QueryService`, statt sie vom Aufrufer zu bekommen.
 
 ## Datenmodell
 
