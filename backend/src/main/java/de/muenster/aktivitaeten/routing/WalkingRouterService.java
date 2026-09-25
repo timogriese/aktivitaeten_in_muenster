@@ -10,6 +10,8 @@ import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.index.Snap;
 import com.graphhopper.util.CustomModel;
 import com.graphhopper.util.PMap;
+import de.muenster.aktivitaeten.activity.Activity;
+import de.muenster.aktivitaeten.activity.ActivityRepository;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,29 +21,30 @@ import java.nio.file.Path;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class WalkingRouterService {
     private final String osmFile;
     private final String graphDirectory;
-    private final String destinationsFile;
+    private final ActivityRepository activityRepository;
     private GraphHopper hopper;
 
     public WalkingRouterService(
             @Value("${routing.osm-file:classpath:muenster-regbez-260924.osm.pbf}") String osmFile,
-            @Value("${routing.destinations-file:classpath:stuff.csv}") String destinationsFile,
-            @Value("${routing.graph-directory:${java.io.tmpdir}/aktivitaeten-graph}") String graphDirectory) {
+            @Value("${routing.graph-directory:${java.io.tmpdir}/aktivitaeten-graph}") String graphDirectory,
+            ActivityRepository activityRepository) {
         this.osmFile = osmFile;
-        this.destinationsFile = destinationsFile;
         this.graphDirectory = graphDirectory;
+        this.activityRepository = activityRepository;
     }
 
     public synchronized WalkingRouteResponse route(WalkingRouteRequest request) {
         GraphHopper graph = graph();
         double maximumSeconds = request.maxWalkingMinutes() * 60.0;
         List<WalkingRouteResponse.Result> results = new ArrayList<>();
-        List<Coordinate> destinations = readDestinations();
+        List<Activity> activities = activityRepository.findAll();
 
         Snap originSnap = graph.getLocationIndex().findClosest(
                 request.origin().latitude(), request.origin().longitude(), EdgeFilter.ALL_EDGES);
@@ -55,7 +58,9 @@ public class WalkingRouterService {
         dijkstra.setWeightLimit(maximumSeconds);
         int originNode = originSnap.getClosestNode();
 
-        for (Coordinate destination : destinations) {
+        for (Activity activity : activities) {
+            Coordinate destination = new Coordinate(
+                    activity.getLocation().getLat(), activity.getLocation().getLon());
             Snap destinationSnap = graph.getLocationIndex().findClosest(
                     destination.latitude(), destination.longitude(), EdgeFilter.ALL_EDGES);
             if (!destinationSnap.isValid()) {
@@ -69,15 +74,16 @@ public class WalkingRouterService {
             }
 
             double seconds = path.getTime() / 1000.0;
-            results.add(new WalkingRouteResponse.Result(destination, seconds));
+            results.add(new WalkingRouteResponse.Result(activity.getId(), seconds));
         }
+        results.sort(Comparator.comparingDouble(WalkingRouteResponse.Result::durationSeconds));
         return new WalkingRouteResponse(results);
     }
 
     public WalkingRouteRequest testRequest() {
         return new WalkingRouteRequest(
                 new Coordinate(51.952248, 7.639208),
-                120.0);
+                30.0);
     }
 
     private GraphHopper graph() {
@@ -93,26 +99,6 @@ public class WalkingRouterService {
                         .addToSpeed(Statement.If("true", Statement.Op.LIMIT, "foot_average_speed"))));
         hopper.importOrLoad();
         return hopper;
-    }
-
-    private List<Coordinate> readDestinations() {
-        try {
-            Path path = resolveResource(destinationsFile, "stuff.csv");
-            return Files.readAllLines(path).stream()
-                    .filter(line -> !line.isBlank())
-                    .map(line -> line.split(";", -1))
-                    .map(parts -> {
-                        if (parts.length != 2) {
-                            throw new IllegalStateException("Invalid destination row: " + String.join(";", parts));
-                        }
-                        return new Coordinate(
-                                Double.parseDouble(parts[0].trim()),
-                                Double.parseDouble(parts[1].trim()));
-                    })
-                    .toList();
-        } catch (IOException | NumberFormatException exception) {
-            throw new IllegalStateException("Could not read destinations from " + destinationsFile, exception);
-        }
     }
 
     private Path resolveResource(String location, String resourceName) {

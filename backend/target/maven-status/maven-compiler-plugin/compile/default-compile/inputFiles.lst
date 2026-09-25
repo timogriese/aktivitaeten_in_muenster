@@ -1,0 +1,17 @@
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\Activity.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\ActivityRepository.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\ActivitySource.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\GroupType.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\GroupTypeConverter.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\Location.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\OpeningHours.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\SourceType.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\activity\SourceTypeConverter.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\api\ActivityController.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\api\HealthController.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\api\RoutingController.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\BackendApplication.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\routing\Coordinate.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\routing\WalkingRouteRequest.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\routing\WalkingRouteResponse.java
+C:\Users\Joni2\Documents\GitHub\aktivitaeten_in_muenster\backend\src\main\java\de\muenster\aktivitaeten\routing\WalkingRouterService.java

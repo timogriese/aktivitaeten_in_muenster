@@ -12,7 +12,6 @@ spring:
 
 routing:
   osm-file: ${ROUTING_OSM_FILE:classpath:muenster-regbez-260924.osm.pbf}
-  destinations-file: ${ROUTING_DESTINATIONS_FILE:classpath:stuff.csv}
   graph-directory: ${ROUTING_GRAPH_DIRECTORY:${java.io.tmpdir}/aktivitaeten-graph}
 
 python:
