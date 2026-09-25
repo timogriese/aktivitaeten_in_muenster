@@ -93,8 +93,14 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div class="decision-actions" role="group" aria-label="Aktivität bewerten">
-      <button class="decision-button decision-button--no" type="button" :disabled="locked" @click="decide(false)"><AppIcon name="close" />Nicht für mich</button>
-      <button class="decision-button decision-button--yes" type="button" :disabled="locked" @click="decide(true)"><AppIcon name="check" />Spannend</button>
+      <div class="decision-option">
+        <button class="decision-button decision-button--no" type="button" aria-label="Nicht für mich" :disabled="locked" @click="decide(false)"><AppIcon name="close" :size="34" /></button>
+        <span aria-hidden="true">Nicht für mich</span>
+      </div>
+      <div class="decision-option">
+        <button class="decision-button decision-button--yes" type="button" aria-label="Spannend" :disabled="locked" @click="decide(true)"><AppIcon name="heart" :size="32" /></button>
+        <span aria-hidden="true">Spannend</span>
+      </div>
     </div>
   </div>
 </template>
