@@ -6,6 +6,7 @@ import de.muenster.aktivitaeten.activity.ActivityRepository;
 import de.muenster.aktivitaeten.explore.ExploreResponse.Coordinates;
 import de.muenster.aktivitaeten.explore.ExploreResponse.ExploreActivity;
 import de.muenster.aktivitaeten.routing.Coordinate;
+import de.muenster.aktivitaeten.routing.WalkingRouteRequest;
 import de.muenster.aktivitaeten.routing.WalkingRouteResponse;
 import de.muenster.aktivitaeten.routing.WalkingRouterService;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Finds activities that fit a time budget: reachable on foot from the origin, and open (or
@@ -62,31 +64,27 @@ public class ExploreService {
             return new ExploreResponse(List.of());
         }
 
-        double maxTravelSeconds = request.availableMinutes() * 60.0 * MAX_TRAVEL_SHARE;
-        Coordinate origin = new Coordinate(request.origin().lat(), request.origin().lng());
-        List<Coordinate> destinations = activities.stream()
-                .map(activity -> new Coordinate(activity.getLocation().getLat(), activity.getLocation().getLon()))
-                .toList();
-        // Only reachable destinations come back; same coordinates -> same walking time.
-        Map<Coordinate, Double> secondsByDestination = new HashMap<>();
-        for (WalkingRouteResponse.Result route :
-                walkingRouterService.routeTo(origin, destinations, maxTravelSeconds)) {
-            secondsByDestination.put(route.destination(), route.durationSeconds());
+        double maxTravelMinutes = request.availableMinutes() * MAX_TRAVEL_SHARE;
+        WalkingRouteRequest walking = new WalkingRouteRequest(
+                new Coordinate(request.origin().lat(), request.origin().lng()), maxTravelMinutes);
+        // Only activities reachable within maxTravelMinutes come back.
+        Map<UUID, Double> secondsByActivity = new HashMap<>();
+        for (WalkingRouteResponse.Result route : walkingRouterService.route(walking).routes()) {
+            secondsByActivity.put(route.activityId(), route.durationSeconds());
         }
 
         ZonedDateTime start = request.startsAt().atZoneSameInstant(ZONE);
         ZonedDateTime end = start.plusMinutes(request.availableMinutes());
 
         List<Match> matches = new ArrayList<>();
-        for (int i = 0; i < activities.size(); i++) {
-            Double seconds = secondsByDestination.get(destinations.get(i));
+        for (Activity activity : activities) {
+            Double seconds = secondsByActivity.get(activity.getId());
             if (seconds == null) {
                 continue;
             }
             Duration travel = Duration.ofSeconds(Math.round(seconds));
             ZonedDateTime arrival = start.plus(travel);
             ZonedDateTime leave = end.minus(travel);
-            Activity activity = activities.get(i);
             openWindow(activity.getOpeningHours(), arrival, leave)
                     .ifPresent(window -> matches.add(new Match(activity, travel, arrival, window)));
         }

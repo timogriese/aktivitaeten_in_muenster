@@ -10,6 +10,8 @@ import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.index.Snap;
 import com.graphhopper.util.CustomModel;
 import com.graphhopper.util.PMap;
+import de.muenster.aktivitaeten.activity.Activity;
+import de.muenster.aktivitaeten.activity.ActivityRepository;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import java.nio.file.Path;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -31,31 +34,26 @@ public class WalkingRouterService {
 
     private final String osmFile;
     private final String graphDirectory;
-    private final String destinationsFile;
+    private final ActivityRepository activityRepository;
     private GraphHopper hopper;
 
     public WalkingRouterService(
             @Value("${routing.osm-file:classpath:muenster-regbez-260924.osm.pbf}") String osmFile,
-            @Value("${routing.destinations-file:classpath:stuff.csv}") String destinationsFile,
-            @Value("${routing.graph-directory:${java.io.tmpdir}/aktivitaeten-graph}") String graphDirectory) {
+            @Value("${routing.graph-directory:${java.io.tmpdir}/aktivitaeten-graph}") String graphDirectory,
+            ActivityRepository activityRepository) {
         this.osmFile = osmFile;
-        this.destinationsFile = destinationsFile;
         this.graphDirectory = graphDirectory;
+        this.activityRepository = activityRepository;
     }
 
     public synchronized WalkingRouteResponse route(WalkingRouteRequest request) {
-        return new WalkingRouteResponse(
-                routeTo(request.origin(), readDestinations(), request.maxWalkingMinutes() * 60.0));
-    }
-
-    /** One shared Dijkstra search from {@code origin}; only destinations within {@code maximumSeconds}. */
-    public synchronized List<WalkingRouteResponse.Result> routeTo(
-            Coordinate origin, List<Coordinate> destinations, double maximumSeconds) {
         GraphHopper graph = graph();
+        double maximumSeconds = request.maxWalkingMinutes() * 60.0;
         List<WalkingRouteResponse.Result> results = new ArrayList<>();
+        List<Activity> activities = activityRepository.findAll();
 
         Snap originSnap = graph.getLocationIndex().findClosest(
-                origin.latitude(), origin.longitude(), EdgeFilter.ALL_EDGES);
+                request.origin().latitude(), request.origin().longitude(), EdgeFilter.ALL_EDGES);
         if (!originSnap.isValid()) {
             throw new IllegalStateException("Could not find a routable graph node for the origin");
         }
@@ -63,12 +61,14 @@ public class WalkingRouterService {
         Weighting weighting = graph.createWeighting(graph.getProfile("foot"), new PMap());
         // No setWeightLimit: DijkstraOneToMany reuses its search across targets, and once one
         // search stops at the limit every later target comes back "not found", even nearby ones.
-        // Reachability is decided by the path time below instead.
+        // The time limit is applied to the path time below instead.
         DijkstraOneToMany dijkstra = new DijkstraOneToMany(
                 graph.getBaseGraph(), weighting, TraversalMode.NODE_BASED);
         int originNode = originSnap.getClosestNode();
 
-        for (Coordinate destination : destinations) {
+        for (Activity activity : activities) {
+            Coordinate destination = new Coordinate(
+                    activity.getLocation().getLat(), activity.getLocation().getLon());
             Snap destinationSnap = graph.getLocationIndex().findClosest(
                     destination.latitude(), destination.longitude(), EdgeFilter.ALL_EDGES);
             if (!destinationSnap.isValid()) {
@@ -82,38 +82,19 @@ public class WalkingRouterService {
             }
 
             double seconds = path.getTime() / 1000.0;
-            if (seconds <= maximumSeconds) {
-                results.add(new WalkingRouteResponse.Result(destination, seconds));
+            if (seconds > maximumSeconds) {
+                continue;
             }
+            results.add(new WalkingRouteResponse.Result(activity.getId(), seconds));
         }
-        return results;
-    }
-
-    // The first import of the OSM extract takes minutes; do it in the background at startup so
-    // the first explore request doesn't hit that. Requests block on the monitor until it's done.
-    @EventListener(ApplicationReadyEvent.class)
-    public void warmUpInBackground() {
-        Thread warmUp = new Thread(() -> {
-            try {
-                loadGraph();
-                log.info("Walking graph ready");
-            } catch (RuntimeException exception) {
-                log.warn("Walking graph could not be loaded - routing endpoints will fail: {}",
-                        exception.getMessage());
-            }
-        }, "routing-warm-up");
-        warmUp.setDaemon(true);
-        warmUp.start();
-    }
-
-    private synchronized void loadGraph() {
-        graph();
+        results.sort(Comparator.comparingDouble(WalkingRouteResponse.Result::durationSeconds));
+        return new WalkingRouteResponse(results);
     }
 
     public WalkingRouteRequest testRequest() {
         return new WalkingRouteRequest(
                 new Coordinate(51.952248, 7.639208),
-                120.0);
+                30.0);
     }
 
     private GraphHopper graph() {
@@ -132,24 +113,25 @@ public class WalkingRouterService {
         return hopper;
     }
 
-    private List<Coordinate> readDestinations() {
-        try {
-            Path path = resolveResource(destinationsFile, "stuff.csv");
-            return Files.readAllLines(path).stream()
-                    .filter(line -> !line.isBlank())
-                    .map(line -> line.split(";", -1))
-                    .map(parts -> {
-                        if (parts.length != 2) {
-                            throw new IllegalStateException("Invalid destination row: " + String.join(";", parts));
-                        }
-                        return new Coordinate(
-                                Double.parseDouble(parts[0].trim()),
-                                Double.parseDouble(parts[1].trim()));
-                    })
-                    .toList();
-        } catch (IOException | NumberFormatException exception) {
-            throw new IllegalStateException("Could not read destinations from " + destinationsFile, exception);
-        }
+    // The first import of the OSM extract takes a while; do it in the background at startup so
+    // the first request doesn't hit that. Requests block on the monitor until it's done.
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmUpInBackground() {
+        Thread warmUp = new Thread(() -> {
+            try {
+                loadGraph();
+                log.info("Walking graph ready");
+            } catch (RuntimeException exception) {
+                log.warn("Walking graph could not be loaded - routing endpoints will fail: {}",
+                        exception.getMessage());
+            }
+        }, "routing-warm-up");
+        warmUp.setDaemon(true);
+        warmUp.start();
+    }
+
+    private synchronized void loadGraph() {
+        graph();
     }
 
     private Path resolveResource(String location, String resourceName) {
