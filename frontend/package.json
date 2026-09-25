@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",
-    "maplibre-gl": "^6.11.2",
     "nuxt": "^4.5.2",
     "vue": "^3.5.0"
   },

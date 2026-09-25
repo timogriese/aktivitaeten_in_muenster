@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { explore } from '~/data/explore'
-import type { Activity, AddressSuggestion, Coordinates, ExploreRequest } from '~/types/explore'
+import type { Activity, AddressSuggestion, ExploreRequest } from '~/types/explore'
 
-const view = ref<'discover' | 'map'>('discover')
-const mapVisited = ref(false)
 const origin = ref<AddressSuggestion | null>(null)
 const activities = ref<Activity[]>([])
 const selectedIndex = ref(0)
@@ -15,7 +13,6 @@ const shortlist = computed(() => activities.value.filter(activity => likedIds.va
 const roundComplete = computed(() => searched.value && activities.value.length > 0 && (likedIds.value.length >= 3 || reviewedIds.value.length === activities.value.length))
 const chosenId = ref<string | null>(null)
 const chosen = computed(() => shortlist.value.find(activity => activity.id === chosenId.value) ?? null)
-const mapActivities = computed(() => roundComplete.value ? shortlist.value : activities.value.filter(activity => !reviewedIds.value.includes(activity.id)))
 const detailActivity = ref<Activity | null>(null)
 const roundNumber = ref(0)
 const completionHeading = ref<HTMLElement>()
@@ -23,7 +20,6 @@ const chosenHeading = ref<HTMLElement>()
 const loading = ref(false)
 const searchError = ref('')
 const details = useTemplateRef('details')
-const mapRegion = ref<HTMLElement>()
 const resultHeading = computed(() => chosen.value ? 'Deine Entscheidung' : roundComplete.value ? 'Deine Auswahl' : searched.value ? 'Was spricht dich an?' : 'Hier beginnt deine Auszeit')
 const announcement = computed(() => {
   if (loading.value) return 'Aktivitäten werden geladen.'
@@ -57,30 +53,7 @@ async function search(request: ExploreRequest) {
   finally { if (version === searchVersion) loading.value = false }
 }
 
-function changeView(nextView: 'discover' | 'map') {
-  view.value = nextView
-  if (nextView === 'map') mapVisited.value = true
-}
-
-async function showMap() {
-  changeView('map')
-  await nextTick()
-  mapRegion.value?.focus({ preventScroll: true })
-  mapRegion.value?.scrollIntoView({ behavior: 'instant', block: 'nearest' })
-}
-
-function pickOrigin(location: Coordinates) {
-  origin.value = { id: 'map', label: `Kartenpunkt · ${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`, location }
-}
-
-function selectActivity(id: string) {
-  if (!mapActivities.value.some(activity => activity.id === id)) return
-  const index = activities.value.findIndex(activity => activity.id === id)
-  if (index >= 0) selectedIndex.value = index
-}
-
 async function openDetails(activity: Activity) {
-  selectActivity(activity.id)
   detailActivity.value = activity
   await nextTick()
   details.value?.open()
@@ -92,7 +65,6 @@ async function decide(id: string, interested: boolean) {
   if (interested) likedIds.value.push(id)
   if (roundComplete.value) {
     selectedIndex.value = activities.value.findIndex(activity => likedIds.value.includes(activity.id))
-    changeView('discover')
     await nextTick()
     completionHeading.value?.focus({ preventScroll: true })
     completionHeading.value?.scrollIntoView({ behavior: 'instant', block: 'nearest' })
@@ -103,7 +75,6 @@ async function decide(id: string, interested: boolean) {
 async function choose(activity: Activity) {
   if (!roundComplete.value || !likedIds.value.includes(activity.id)) return
   chosenId.value = activity.id
-  selectActivity(activity.id)
   await nextTick()
   chosenHeading.value?.focus({ preventScroll: true })
   chosenHeading.value?.scrollIntoView({ behavior: 'instant', block: 'nearest' })
@@ -126,16 +97,12 @@ onBeforeUnmount(() => { ++searchVersion })
       </section>
       <div class="workspace">
         <aside class="search-sidebar" aria-label="Aktivitäten suchen">
-          <SearchForm v-model:origin="origin" :loading="loading" @search="search" @pick-on-map="showMap" />
+          <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
           <div class="sidebar-note"><AppIcon name="leaf" :size="21" /><p>Manchmal ist die nächste<br>Auszeit gleich um die Ecke.</p></div>
         </aside>
         <section class="results-section" aria-labelledby="results-heading" :aria-busy="loading">
           <div class="results-toolbar">
             <div class="result-summary"><h2 id="results-heading">{{ resultHeading }}</h2><span v-if="searched">{{ roundComplete ? shortlist.length : activities.length }} {{ (roundComplete ? shortlist.length : activities.length) === 1 ? 'Aktivität' : 'Aktivitäten' }} · Beispieldaten</span><span v-else>Münster wartet auf dich</span></div>
-            <div class="view-switch" role="group" aria-label="Ansicht wählen">
-              <button type="button" :aria-pressed="view === 'discover'" :class="{ active: view === 'discover' }" @click="changeView('discover')"><AppIcon name="discover" :size="17" />Entdecken</button>
-              <button type="button" :aria-pressed="view === 'map'" :class="{ active: view === 'map' }" @click="changeView('map')"><AppIcon name="map" :size="17" />Karte</button>
-            </div>
           </div>
           <div class="sr-only" role="status" aria-atomic="true">{{ announcement }}</div>
           <p v-if="searchError" class="result-error" role="alert">{{ searchError }}</p>
@@ -144,10 +111,10 @@ onBeforeUnmount(() => { ++searchVersion })
             <span><strong>{{ likedIds.length }}</strong> von 3 gefunden</span>
             <div class="progress-slots" aria-hidden="true"><span v-for="index in 3" :key="index" :class="{ filled: index <= likedIds.length }"><AppIcon v-if="index <= likedIds.length" name="check" :size="14" /><span v-else>{{ index }}</span></span></div>
           </div>
-          <div v-show="view === 'discover'" class="discover-view">
+          <div class="discover-view">
             <div v-if="chosen" class="chosen-result">
               <div class="chosen-heading"><span class="chosen-check" aria-hidden="true"><AppIcon name="check" :size="24" /></span><div><p class="eyebrow">Weniger überlegen. Los geht’s.</p><h3 ref="chosenHeading" tabindex="-1">Deine Auszeit steht fest.</h3></div></div>
-              <ActivityCard :activity="chosen" @details="openDetails(chosen)"><template #actions><button class="secondary-button chosen-map" type="button" @click="selectActivity(chosen.id); showMap()"><AppIcon name="map" :size="18" />Auf Karte zeigen</button></template></ActivityCard>
+              <ActivityCard :activity="chosen" @details="openDetails(chosen)" />
             </div>
             <div v-else-if="roundComplete" class="round-results">
               <div :key="roundNumber" class="round-completion" :class="{ 'round-completion--success': shortlist.length === 3 }">
@@ -173,19 +140,11 @@ onBeforeUnmount(() => { ++searchVersion })
               <div class="welcome-content"><span class="welcome-label"><AppIcon name="pin" :size="15" />MÜNSTER, DEINE STADT</span><h3>Mal kurz<br><em>rauskommen.</em></h3><p>Was klingt nach deiner Auszeit?<br>Finde drei Ideen und wähle deinen Favoriten.</p><span class="welcome-footnote"><span></span>Natur, Kultur und kleine Abenteuer</span></div>
             </div>
           </div>
-          <div v-show="view === 'map'" ref="mapRegion" class="map-region" tabindex="-1" aria-label="Kartenansicht">
-            <p class="map-instruction"><AppIcon name="pin" :size="16" />Klicke auf die Karte, um deinen Startort zu wählen.</p>
-            <div class="map-layout" :class="{ 'has-selection': selected, 'has-decision': selected && !roundComplete }">
-              <ClientOnly><LazyActivityMap v-if="mapVisited" :activities="mapActivities" :selected-id="selected?.id" :origin="origin?.location ?? null" :active="view === 'map'" @select="selectActivity" @pick-origin="pickOrigin" /><template #fallback><div class="map-placeholder">Karte wird geladen …</div></template></ClientOnly>
-              <ActivityDecision v-if="selected && !roundComplete" :key="roundNumber" :activity="selected" :disabled="loading" compact @decide="decide" @details="openDetails(selected)" />
-              <ActivityCard v-else-if="selected" :key="selected.id" :activity="selected" compact @details="openDetails(selected)" />
-            </div>
-          </div>
           <p class="results-footnote"><span class="tiny-star" aria-hidden="true">✳</span>Dein nächster Lieblingsmoment könnte ganz nah sein.</p>
         </section>
       </div>
     </main>
     <footer class="site-footer"><span>Mit Neugier durch Münster.</span><p>Demo mit Beispieldaten. Veranstaltungen und Zeitangaben sind keine verifizierten aktuellen Informationen.</p></footer>
-    <ActivityDetails ref="details" :activity="detailActivity" @show-map="showMap" />
+    <ActivityDetails ref="details" :activity="detailActivity" />
   </div>
 </template>

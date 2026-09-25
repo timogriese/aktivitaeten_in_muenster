@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Activity } from '~/types/explore'
 
-const props = defineProps<{ activity: Activity; compact?: boolean; disabled?: boolean }>()
+const props = defineProps<{ activity: Activity; disabled?: boolean }>()
 const emit = defineEmits<{ decide: [id: string, interested: boolean]; details: [] }>()
 const surface = ref<HTMLElement>()
 const dragX = ref(0)
@@ -85,10 +85,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="activity-decision" :class="{ 'activity-decision--compact': compact }">
+  <div class="activity-decision">
     <div class="swipe-stage">
       <div ref="surface" class="swipe-surface" :class="{ 'is-dragging': dragging, 'swipe-yes': leaving === 'yes', 'swipe-no': leaving === 'no' }" :style="cardStyle" @pointerdown="pointerDown" @pointermove="pointerMove" @pointerup="pointerUp" @pointercancel="releasePointer" @lostpointercapture="releasePointer" @dragstart.prevent>
-        <ActivityCard :key="activity.id" :activity="activity" :compact="compact" @details="emit('details')" />
+        <ActivityCard :key="activity.id" :activity="activity" @details="emit('details')" />
         <span v-if="dragging || leaving" class="swipe-verdict" :class="{ 'swipe-verdict--no': leaving === 'no' || (!leaving && dragX < 0) }" aria-hidden="true">{{ leaving === 'yes' || (!leaving && dragX > 0) ? 'Spannend' : 'Nicht für mich' }}</span>
       </div>
     </div>

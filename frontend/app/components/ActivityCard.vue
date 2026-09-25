@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { Activity } from '~/types/explore'
-const props = defineProps<{ activity: Activity; compact?: boolean }>()
+const props = defineProps<{ activity: Activity }>()
 defineEmits<{ details: [] }>()
 const categoryIcon = computed(() => ({ 'Natur & draußen': 'leaf', 'Kunst & Kultur': 'culture', 'Sport & Bewegung': 'sport', 'Musik & Bühne': 'music' }[props.activity.category] || 'discover'))
 </script>
 
 <template>
-  <article class="activity-card" :class="{ 'activity-card--compact': compact }" :aria-label="activity.title">
+  <article class="activity-card" :aria-label="activity.title">
     <div class="card-visual">
       <ActivityImage :src="activity.imageUrl" :title="activity.title" />
       <span class="image-location"><AppIcon name="pin" :size="15" /> Münster</span>

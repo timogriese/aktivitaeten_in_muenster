@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import type { Activity } from '~/types/explore'
 defineProps<{ activity: Activity | null }>()
-const emit = defineEmits<{ showMap: []; close: [] }>()
+const emit = defineEmits<{ close: [] }>()
 const dialog = ref<HTMLDialogElement>()
 const closeButton = ref<HTMLButtonElement>()
 let previouslyFocused: HTMLElement | null = null
-let returnToMap = false
 
 function open() {
-  returnToMap = false
   previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null
   dialog.value?.showModal()
   document.body.classList.add('dialog-open')
@@ -17,13 +15,8 @@ function open() {
 function close() { dialog.value?.close() }
 function onClose() {
   document.body.classList.remove('dialog-open')
-  if (returnToMap) emit('showMap')
-  else previouslyFocused?.focus()
+  previouslyFocused?.focus()
   emit('close')
-}
-function showOnMap() {
-  returnToMap = true
-  close()
 }
 function formatDate(value: string) {
   const date = new Date(value)
@@ -60,9 +53,8 @@ defineExpose({ open, close })
           <div v-if="activity.travelTimeMinutes != null"><dt><AppIcon name="arrow" />Anreise</dt><dd>{{ activity.travelTimeMinutes }} Minuten (Beispiel)</dd></div>
         </dl>
         <p class="detail-demo">Beispieldaten: Veranstaltungen, Öffnungs- und Reisezeiten sind nicht als aktuelle Angaben verifiziert.</p>
-        <div class="detail-actions">
-          <button class="primary-button" type="button" @click="showOnMap"><AppIcon name="map" />Auf Karte zeigen</button>
-          <a v-if="safeWebsite(activity.websiteUrl)" class="text-link" :href="safeWebsite(activity.websiteUrl)" target="_blank" rel="noopener noreferrer">Website öffnen<AppIcon name="external" :size="16" /><span class="sr-only"> (neuer Tab)</span></a>
+        <div v-if="safeWebsite(activity.websiteUrl)" class="detail-actions">
+          <a class="text-link" :href="safeWebsite(activity.websiteUrl)" target="_blank" rel="noopener noreferrer">Website öffnen<AppIcon name="external" :size="16" /><span class="sr-only"> (neuer Tab)</span></a>
         </div>
       </div>
     </div>

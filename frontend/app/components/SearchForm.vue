@@ -5,7 +5,7 @@ import type { AddressSuggestion, ExploreRequest } from '~/types/explore'
 
 defineProps<{ loading: boolean }>()
 const origin = defineModel<AddressSuggestion | null>('origin', { required: true })
-const emit = defineEmits<{ search: [request: ExploreRequest]; pickOnMap: [] }>()
+const emit = defineEmits<{ search: [request: ExploreRequest] }>()
 const hours = ref<number | string>('')
 const minutes = ref<number | string>('')
 const startMode = ref('now')
@@ -55,7 +55,7 @@ async function searchAddresses() {
     if (version === addressVersion) suggestions.value = response
   }
   catch {
-    if (version === addressVersion) addressError.value = 'Die Adresssuche ist gerade nicht verfügbar. Wähle einen Punkt auf der Karte oder versuche es erneut.'
+    if (version === addressVersion) addressError.value = 'Die Adresssuche ist gerade nicht verfügbar. Nutze „Mein Standort“ oder versuche es erneut.'
   }
   finally { if (version === addressVersion) addressLoading.value = false }
 }
@@ -88,7 +88,7 @@ function leaveAddress(event: FocusEvent) {
 
 function locate() {
   geoError.value = ''
-  if (!navigator.geolocation) { geoError.value = 'Dein Browser unterstützt die Standortabfrage nicht. Nutze die Adresssuche oder die Karte.'; return }
+  if (!navigator.geolocation) { geoError.value = 'Dein Browser unterstützt die Standortabfrage nicht. Nutze die Adresssuche.'; return }
   const version = ++locationVersion
   ++addressVersion
   suggestionsOpen.value = false
@@ -104,8 +104,8 @@ function locate() {
       if (version !== locationVersion) return
       locating.value = false
       geoError.value = error.code === 1
-        ? 'Standortfreigabe verweigert. Du kannst eine Adresse oder einen Punkt auf der Karte wählen.'
-        : 'Dein Standort konnte nicht ermittelt werden. Nutze die Adresssuche oder die Karte.'
+        ? 'Standortfreigabe verweigert. Du kannst eine Adresse wählen.'
+        : 'Dein Standort konnte nicht ermittelt werden. Nutze die Adresssuche.'
     },
     { enableHighAccuracy: false, timeout: 15000, maximumAge: 0 },
   )
@@ -143,7 +143,7 @@ function submit() {
     }
   }
   if (!origin.value || !Number.isFinite(origin.value.location.lat) || Math.abs(origin.value.location.lat) > 90 || !Number.isFinite(origin.value.location.lng) || Math.abs(origin.value.location.lng) > 180) {
-    invalid('address', 'Bitte wähle einen Adressvorschlag, deinen Standort oder einen Punkt auf der Karte.')
+    invalid('address', 'Bitte wähle einen Adressvorschlag oder deinen Standort.')
     return
   }
   emit('search', { origin: { ...origin.value.location }, startsAt, availableMinutes })
@@ -190,7 +190,6 @@ onBeforeUnmount(() => { ++addressVersion; ++locationVersion })
       <small id="address-hint">Lokale Beispieladressen in Münster</small>
       <div class="location-actions">
         <button class="text-button" type="button" :disabled="locating" @click="locate"><AppIcon name="locate" :size="16" />{{ locating ? 'Standort wird ermittelt …' : 'Mein Standort' }}</button>
-        <button class="text-button" type="button" @click="emit('pickOnMap')"><AppIcon name="map" :size="16" />Auf Karte wählen</button>
       </div>
       <p v-if="geoError" class="inline-error" role="alert">{{ geoError }}</p>
     </fieldset>
