@@ -17,6 +17,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -66,19 +67,23 @@ public class ExploreService {
         List<Coordinate> destinations = activities.stream()
                 .map(activity -> new Coordinate(activity.getLocation().getLat(), activity.getLocation().getLon()))
                 .toList();
-        List<WalkingRouteResponse.Result> routes =
-                walkingRouterService.routeTo(origin, destinations, maxTravelSeconds);
+        // Only reachable destinations come back; same coordinates -> same walking time.
+        Map<Coordinate, Double> secondsByDestination = new HashMap<>();
+        for (WalkingRouteResponse.Result route :
+                walkingRouterService.routeTo(origin, destinations, maxTravelSeconds)) {
+            secondsByDestination.put(route.destination(), route.durationSeconds());
+        }
 
         ZonedDateTime start = request.startsAt().atZoneSameInstant(ZONE);
         ZonedDateTime end = start.plusMinutes(request.availableMinutes());
 
         List<Match> matches = new ArrayList<>();
         for (int i = 0; i < activities.size(); i++) {
-            WalkingRouteResponse.Result route = routes.get(i);
-            if (!route.reachable()) {
+            Double seconds = secondsByDestination.get(destinations.get(i));
+            if (seconds == null) {
                 continue;
             }
-            Duration travel = Duration.ofSeconds(Math.round(route.durationSeconds()));
+            Duration travel = Duration.ofSeconds(Math.round(seconds));
             ZonedDateTime arrival = start.plus(travel);
             ZonedDateTime leave = end.minus(travel);
             Activity activity = activities.get(i);

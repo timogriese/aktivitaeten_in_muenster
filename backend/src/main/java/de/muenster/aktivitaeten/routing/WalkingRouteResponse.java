@@ -5,8 +5,6 @@ import java.util.List;
 public record WalkingRouteResponse(List<Result> routes) {
     public record Result(
             Coordinate destination,
-            Double durationSeconds,
-            boolean reachable,
-            String error) {
+            double durationSeconds) {
     }
 }

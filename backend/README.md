@@ -46,6 +46,10 @@ destinations from `stuff.csv`:
 }
 ```
 
+The response contains only destinations reachable within the time limit. Each
+entry includes the destination and its walking duration; unreachable
+destinations are omitted.
+
 `POST /api/routing/walking/test` runs the Münster test request using the
 destinations in `stuff.csv` and the Münster origin configured in the service.
 Override the fixture with `ROUTING_DESTINATIONS_FILE` when needed.

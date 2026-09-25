@@ -10,13 +10,15 @@ export ROUTING_GRAPH_DIRECTORY = data/graph
 
 help:
 	@echo Targets:
-	@echo   make install   - Dependencies laden + kompilieren (mvn compile)
+	@echo   make install   - Dependencies laden + sauber neu bauen (mvn clean compile)
 	@echo   make dev       - Backend starten (Port 8080)
 	@echo   make lint      - Kompilier-Check (kein Java-Linter konfiguriert)
 	@echo OSM-Extrakt fuers Routing erwartet unter backend/data/, siehe README.md.
 
+# clean: a stale target/ (e.g. after pulling, when tracked .class files got deleted) otherwise
+# makes spring-boot:run fail with ClassNotFoundException.
 install:
-	mvn -q -DskipTests compile
+	mvn -q -DskipTests clean compile
 
 dev:
 	mvn spring-boot:run
