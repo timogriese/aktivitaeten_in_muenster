@@ -1,4 +1,7 @@
 {
     "name": "Frontend",
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:26"
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:26",
+    "postCreateCommand": {
+        "install tunnelmole": "npm install -g tunnelmole"
+    }
 }

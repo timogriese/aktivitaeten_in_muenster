@@ -1,4 +1,11 @@
 export default defineNuxtConfig({
+  vite: {
+    server: {
+      allowedHosts: [
+        '.tunnelmole.net'
+      ]
+    }
+  },
   compatibilityDate: '2026-09-25',
   telemetry: false,
   devtools: { enabled: false },
