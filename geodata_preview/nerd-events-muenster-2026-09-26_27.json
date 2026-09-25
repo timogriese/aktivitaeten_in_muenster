@@ -1,0 +1,253 @@
+{
+  "location": {
+    "city": "Münster",
+    "country": "Deutschland"
+  },
+  "date_range": {
+    "start_date": "2026-09-26",
+    "end_date": "2026-09-27"
+  },
+  "timezone": "Europe/Berlin",
+  "events": [
+    {
+      "id": "spielemesse-la-vie-2026",
+      "name": "Lokale Spielemesse im La Vie",
+      "categories": [
+        "Brettspiele",
+        "Pen & Paper",
+        "Rollenspiele",
+        "Tabletop",
+        "Spieleflohmarkt"
+      ],
+      "schedule": [
+        {
+          "date": "2026-09-26",
+          "start_time": "10:00",
+          "end_time": "18:00"
+        },
+        {
+          "date": "2026-09-27",
+          "start_time": "10:00",
+          "end_time": "18:00"
+        }
+      ],
+      "address": {
+        "venue": "La Vie",
+        "street": "Dieckmannstraße 127",
+        "postal_code": "48161",
+        "city": "Münster",
+        "country": "Deutschland"
+      },
+      "coordinates": {
+        "latitude": 51.9445,
+        "longitude": 7.5488,
+        "precision": "gerundet"
+      },
+      "website": "https://willis-sport-fun.de/26-27-9-2026-la-vie-1000-1800",
+      "admission": {
+        "currency": "EUR",
+        "prices": [
+          {
+            "category": "Einzelperson ab 6 Jahren",
+            "amount": 5.0
+          },
+          {
+            "category": "Familie",
+            "amount": 10.0
+          }
+        ]
+      },
+      "highlights": [
+        "Brettspiele ausprobieren",
+        "Rollenspiel-Schnupperrunden",
+        "Tabletop",
+        "Bemalen von Miniaturen",
+        "Spieleflohmarkt"
+      ]
+    },
+    {
+      "id": "comic-manga-convention-muenster-2026",
+      "name": "Comic und Manga Convention Münster",
+      "categories": [
+        "Comics",
+        "Manga",
+        "Anime",
+        "Cosplay",
+        "Merchandise"
+      ],
+      "schedule": [
+        {
+          "date": "2026-09-27",
+          "start_time": "11:00",
+          "end_time": "18:00"
+        }
+      ],
+      "address": {
+        "venue": "Stadthalle Hiltrup",
+        "street": "Westfalenstraße 197",
+        "postal_code": "48165",
+        "city": "Münster",
+        "country": "Deutschland"
+      },
+      "coordinates": {
+        "latitude": 51.8878,
+        "longitude": 7.6399,
+        "precision": "gerundet"
+      },
+      "website": "https://comic-messen.de/cmc-muenster",
+      "admission": {
+        "currency": "EUR",
+        "prices": [
+          {
+            "category": "Erwachsene",
+            "amount": 7.0
+          },
+          {
+            "category": "Kinder bis einschließlich 10 Jahre",
+            "amount": 0.0
+          }
+        ]
+      },
+      "highlights": [
+        "Artist Alley",
+        "Zeichner und Händler",
+        "Kostenloser Zeichenworkshop von 13:00 bis 15:00 Uhr",
+        "Cosplay Walk um 16:00 Uhr"
+      ]
+    },
+    {
+      "id": "drei-fragezeichen-salztote-2026",
+      "name": "Die drei ??? und die Salztote",
+      "categories": [
+        "Hörspiel",
+        "3D-Audio",
+        "Planetarium"
+      ],
+      "schedule": [
+        {
+          "date": "2026-09-26",
+          "start_time": "19:30",
+          "end_time": null
+        }
+      ],
+      "address": {
+        "venue": "LWL-Museum für Naturkunde mit Planetarium",
+        "street": "Sentruper Straße 285",
+        "postal_code": "48161",
+        "city": "Münster",
+        "country": "Deutschland"
+      },
+      "coordinates": {
+        "latitude": 51.949,
+        "longitude": 7.5962,
+        "precision": "gerundet"
+      },
+      "website": "https://www.lwl-naturkundemuseum-muenster.de/de/planetarium/veranstaltungskalender/",
+      "minimum_age": 12,
+      "highlights": [
+        "Hörspiel unter der Planetariumskuppel",
+        "3D-Audiosound"
+      ]
+    },
+    {
+      "id": "planetarium-astronomieprogramm-2026",
+      "name": "Planetarium-Astronomieprogramm",
+      "categories": [
+        "Astronomie",
+        "Raumfahrt",
+        "Wissenschaft"
+      ],
+      "schedule": [
+        {
+          "date": "2026-09-26",
+          "shows": [
+            {
+              "title": "Planeten – Expedition ins Sonnensystem",
+              "start_time": "12:00",
+              "end_time": null
+            },
+            {
+              "title": "Zeitreise – Vom Urknall zum Menschen",
+              "start_time": "17:00",
+              "end_time": null
+            },
+            {
+              "title": "Aurora – Wunderbares Polarlicht",
+              "start_time": "18:00",
+              "end_time": null
+            }
+          ]
+        },
+        {
+          "date": "2026-09-27",
+          "shows": [
+            {
+              "title": "Universum – Live!",
+              "start_time": null,
+              "end_time": null
+            }
+          ]
+        }
+      ],
+      "address": {
+        "venue": "LWL-Museum für Naturkunde mit Planetarium",
+        "street": "Sentruper Straße 285",
+        "postal_code": "48161",
+        "city": "Münster",
+        "country": "Deutschland"
+      },
+      "coordinates": {
+        "latitude": 51.949,
+        "longitude": 7.5962,
+        "precision": "gerundet"
+      },
+      "website": "https://www.lwl-naturkundemuseum-muenster.de/de/planetarium/veranstaltungskalender/"
+    },
+    {
+      "id": "manga-day-thalia-muenster-2026",
+      "name": "Manga Day 2026 mit exklusivem Naruto-Quiz",
+      "categories": [
+        "Manga",
+        "Anime",
+        "Lesen",
+        "Quiz"
+      ],
+      "schedule": [
+        {
+          "date": "2026-09-26",
+          "start_time": "10:00",
+          "end_time": null
+        }
+      ],
+      "address": {
+        "venue": "Thalia Münster – Poertgen-Herder",
+        "street": "Salzstraße 56",
+        "postal_code": "48143",
+        "city": "Münster",
+        "country": "Deutschland"
+      },
+      "coordinates": {
+        "latitude": 51.9611,
+        "longitude": 7.6319,
+        "precision": "gerundet"
+      },
+      "website": "https://www.thalia.de/veranstaltung/veranstaltungskalender?stadt=m%C3%BCnster&monat=alle",
+      "admission": {
+        "currency": "EUR",
+        "prices": [
+          {
+            "category": "Teilnahme",
+            "amount": 0.0
+          }
+        ]
+      },
+      "availability_note": "Kostenlose Leseproben und Geschenke nur solange der Vorrat reicht.",
+      "highlights": [
+        "Kostenlose Leseproben aus 26 Manga-Sonderproduktionen",
+        "Maximal drei Manga-Hefte pro Person",
+        "Naruto-Quiz mit Fan-Fragen",
+        "Exklusives Geschenk bei erfolgreicher Teilnahme"
+      ]
+    }
+  ]
+}
