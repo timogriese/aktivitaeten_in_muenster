@@ -25,15 +25,15 @@ Umgebungsvariable überschreiben (`CRAWLER_`-Prefix, siehe `app/core/config.py`)
 
 ## Starten
 
-Zwei Terminals:
+Normalerweise vom Repo-Root mit `make dev` (startet Backend, Crawler und Frontend
+zusammen). Nur der Crawler:
 
 ```bash
-make mock-backend   # Mock-Backend auf Port 8001
+make dev            # Crawler-Service auf Port 8000, pusht an das Spring-Backend (8080)
 ```
 
-```bash
-make dev            # Crawler-Service auf Port 8000
-```
+Ohne Java geht es auch gegen den Python-Mock (`make mock-backend`, Port 8001) mit
+`CRAWLER_BACKEND_URL=http://localhost:8001`.
 
 Crawl manuell auslösen:
 
@@ -67,7 +67,7 @@ app/                     # Crawler-Service (Port 8000)
   api/
     routes.py                  # GET /health, POST /crawl
 
-mock_backend/            # Platzhalter-Backend (Port 8001), bis das echte Backend steht
+mock_backend/            # Python-Stand-in fuers Backend (Port 8001), fuer offline/ohne Java
   models.py
   storage_service.py       # In-Memory-Storage
   main.py                    # CRUD: POST/GET/GET-by-id/PUT/DELETE /activities
@@ -128,6 +128,10 @@ echtem Neuanlegen, `200` bei Update — `CrawlService` zählt das für `created`
 parallel) an das Backend schickt, greift der Dedup-Check auch innerhalb eines einzelnen
 Crawl-Zyklus, falls zwei der 5 Queries dieselbe Aktivität finden.
 
-## Mock-Backend ablösen
+## Backend
 
-Sobald das echte Backend steht: `CRAWLER_BACKEND_URL` auf dessen URL setzen (Default: `http://localhost:8001`), `mock_backend/` kann dann raus.
+Default ist das Spring-Backend (`CRAWLER_BACKEND_URL`, Default `http://localhost:8080`),
+das denselben Upsert-per-Titel-Vertrag wie `mock_backend` umsetzt. Lehnt das Backend
+einzelne Aktivitäten ab (z.B. leere Beschreibung), werden sie geloggt und übersprungen
+(`rejected` im `/crawl`-Ergebnis) — der Rest des Crawls läuft weiter. Ist das Backend gar
+nicht erreichbar, schlägt der Crawl fehl.
