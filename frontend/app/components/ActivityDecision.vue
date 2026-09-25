@@ -18,10 +18,11 @@ const cardStyle = computed(() => {
 })
 
 function releasePointer() {
-  if (pointer && surface.value?.hasPointerCapture(pointer.id)) surface.value.releasePointerCapture(pointer.id)
+  const activePointer = pointer
   pointer = null
   dragging.value = false
   dragX.value = 0
+  if (activePointer && surface.value?.hasPointerCapture(activePointer.id)) surface.value.releasePointerCapture(activePointer.id)
 }
 
 function reset() {
@@ -64,10 +65,14 @@ function pointerMove(event: PointerEvent) {
 
 function pointerUp(event: PointerEvent) {
   if (!pointer || pointer.id !== event.pointerId) return
-  const distance = dragX.value
+  const distance = dragging.value ? event.clientX - pointer.x : 0
   const threshold = Math.min(90, (surface.value?.clientWidth ?? 400) * 0.22)
   releasePointer()
   if (Math.abs(distance) >= threshold) decide(distance > 0)
+}
+
+function pointerCancel(event: PointerEvent) {
+  if (pointer?.id === event.pointerId) releasePointer()
 }
 
 function updateMotionPreference() { reducedMotion.value = motionPreference?.matches ?? false }
@@ -87,7 +92,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="activity-decision">
     <div class="swipe-stage">
-      <div ref="surface" class="swipe-surface" :class="{ 'is-dragging': dragging, 'swipe-yes': leaving === 'yes', 'swipe-no': leaving === 'no' }" :style="cardStyle" @pointerdown="pointerDown" @pointermove="pointerMove" @pointerup="pointerUp" @pointercancel="releasePointer" @lostpointercapture="releasePointer" @dragstart.prevent>
+      <div ref="surface" class="swipe-surface" :class="{ 'is-dragging': dragging, 'swipe-yes': leaving === 'yes', 'swipe-no': leaving === 'no' }" :style="cardStyle" @pointerdown="pointerDown" @pointermove="pointerMove" @pointerup="pointerUp" @pointercancel="pointerCancel" @lostpointercapture.self="pointerCancel" @dragstart.prevent>
         <ActivityCard :key="activity.id" :activity="activity" @details="emit('details')" />
         <span v-if="dragging || leaving" class="swipe-verdict" :class="{ 'swipe-verdict--no': leaving === 'no' || (!leaving && dragX < 0) }" aria-hidden="true">{{ leaving === 'yes' || (!leaving && dragX > 0) ? 'Spannend' : 'Nicht für mich' }}</span>
       </div>
