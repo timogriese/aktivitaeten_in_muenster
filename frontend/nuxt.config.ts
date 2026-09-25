@@ -5,6 +5,10 @@ export default defineNuxtConfig({
   experimental: { appManifest: false },
   modules: ['@nuxt/eslint'],
   css: ['~/assets/main.css'],
+  // Same-origin proxy to the Spring Boot backend, so the browser never needs CORS.
+  routeRules: {
+    '/api/**': { proxy: `${process.env.BACKEND_URL ?? 'http://localhost:8080'}/api/**` },
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'de' },

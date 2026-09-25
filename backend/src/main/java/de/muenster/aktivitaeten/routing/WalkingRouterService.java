@@ -11,7 +11,11 @@ import com.graphhopper.storage.index.Snap;
 import com.graphhopper.util.CustomModel;
 import com.graphhopper.util.PMap;
 import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
@@ -23,6 +27,8 @@ import java.util.List;
 
 @Service
 public class WalkingRouterService {
+    private static final Logger log = LoggerFactory.getLogger(WalkingRouterService.class);
+
     private final String osmFile;
     private final String graphDirectory;
     private final String destinationsFile;
@@ -38,21 +44,28 @@ public class WalkingRouterService {
     }
 
     public synchronized WalkingRouteResponse route(WalkingRouteRequest request) {
+        return new WalkingRouteResponse(
+                routeTo(request.origin(), readDestinations(), request.maxWalkingMinutes() * 60.0));
+    }
+
+    /** One shared Dijkstra search from {@code origin}; results are in the order of {@code destinations}. */
+    public synchronized List<WalkingRouteResponse.Result> routeTo(
+            Coordinate origin, List<Coordinate> destinations, double maximumSeconds) {
         GraphHopper graph = graph();
-        double maximumSeconds = request.maxWalkingMinutes() * 60.0;
         List<WalkingRouteResponse.Result> results = new ArrayList<>();
-        List<Coordinate> destinations = readDestinations();
 
         Snap originSnap = graph.getLocationIndex().findClosest(
-                request.origin().latitude(), request.origin().longitude(), EdgeFilter.ALL_EDGES);
+                origin.latitude(), origin.longitude(), EdgeFilter.ALL_EDGES);
         if (!originSnap.isValid()) {
             throw new IllegalStateException("Could not find a routable graph node for the origin");
         }
 
         Weighting weighting = graph.createWeighting(graph.getProfile("foot"), new PMap());
+        // No setWeightLimit: DijkstraOneToMany reuses its search across targets, and once one
+        // search stops at the limit every later target comes back "not found", even nearby ones.
+        // Reachability is decided by the path time below instead.
         DijkstraOneToMany dijkstra = new DijkstraOneToMany(
                 graph.getBaseGraph(), weighting, TraversalMode.NODE_BASED);
-        dijkstra.setWeightLimit(maximumSeconds);
         int originNode = originSnap.getClosestNode();
 
         for (Coordinate destination : destinations) {
@@ -68,7 +81,7 @@ public class WalkingRouterService {
                     originNode, destinationSnap.getClosestNode());
             if (!path.isFound()) {
                 results.add(new WalkingRouteResponse.Result(
-                        destination, null, false, "No walking route within the walking time limit"));
+                        destination, null, false, "No walking route found"));
                 continue;
             }
 
@@ -76,7 +89,28 @@ public class WalkingRouterService {
             results.add(new WalkingRouteResponse.Result(
                     destination, seconds, seconds <= maximumSeconds, null));
         }
-        return new WalkingRouteResponse(results);
+        return results;
+    }
+
+    // The first import of the OSM extract takes minutes; do it in the background at startup so
+    // the first explore request doesn't hit that. Requests block on the monitor until it's done.
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmUpInBackground() {
+        Thread warmUp = new Thread(() -> {
+            try {
+                loadGraph();
+                log.info("Walking graph ready");
+            } catch (RuntimeException exception) {
+                log.warn("Walking graph could not be loaded - routing endpoints will fail: {}",
+                        exception.getMessage());
+            }
+        }, "routing-warm-up");
+        warmUp.setDaemon(true);
+        warmUp.start();
+    }
+
+    private synchronized void loadGraph() {
+        graph();
     }
 
     public WalkingRouteRequest testRequest() {
@@ -90,13 +124,14 @@ public class WalkingRouterService {
             return hopper;
         }
         Path osmPath = resolveResource(osmFile, "muenster-regbez-260924.osm.pbf");
-        hopper = new GraphHopper()
+        GraphHopper loaded = new GraphHopper()
                 .setOSMFile(osmPath.toString())
                 .setGraphHopperLocation(graphDirectory)
                 .setEncodedValuesString("foot_average_speed")
                 .setProfiles(new Profile("foot").setCustomModel(new CustomModel()
                         .addToSpeed(Statement.If("true", Statement.Op.LIMIT, "foot_average_speed"))));
-        hopper.importOrLoad();
+        loaded.importOrLoad();
+        hopper = loaded;
         return hopper;
     }
 
