@@ -170,6 +170,7 @@ h1 em { font-weight: 400; color: #55714a; }
 .activity-decision { min-width: 0; }
 .swipe-stage { overflow: hidden; border-radius: 19px; }
 .swipe-surface { position: relative; touch-action: pan-y pinch-zoom; transition: transform .2s ease, opacity .2s ease; }
+.swipe-surface .activity-card, .swipe-surface .activity-image, .swipe-surface .image-fallback { touch-action: pan-y pinch-zoom; }
 .swipe-surface.is-dragging { transition: none; user-select: none; cursor: grabbing; }
 .swipe-surface .activity-image img { pointer-events: none; user-select: none; }
 .swipe-surface.swipe-yes { transform: translateX(110%) rotate(7deg); opacity: 0; pointer-events: none; }
