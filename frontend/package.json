@@ -1,0 +1,25 @@
+{
+  "name": "rauszeit-muenster",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
+    "maplibre-gl": "^6.11.2",
+    "nuxt": "^4.5.2",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "eslint": "^9.39.0",
+    "typescript": "^5.9.0",
+    "vue-tsc": "^3.1.0"
+  }
+}
