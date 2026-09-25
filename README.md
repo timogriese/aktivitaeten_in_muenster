@@ -1,4 +1,4 @@
-# aktivitaeten_in_muenster
+# Münster Match (Aktivitaeten_in_muenster)
 
 App, die sehenswerte Orte und Aktivitäten in Münster in der Nähe anzeigt — unter Berücksichtigung von verfügbarem Zeitfenster und Erreichbarkeit, mit Fokus auf Entdeckung (offene Vereinstrainings, Meetups, spontane Möglichkeiten).
 
