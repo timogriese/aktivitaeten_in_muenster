@@ -6,6 +6,13 @@ import type { AddressSuggestion, ExploreRequest } from '~/types/explore'
 defineProps<{ loading: boolean }>()
 const origin = defineModel<AddressSuggestion | null>('origin', { required: true })
 const emit = defineEmits<{ search: [request: ExploreRequest] }>()
+const durationChoice = ref<number | 'custom' | null>(null)
+const durationPresets = [
+  { minutes: 30, label: '30 Min.' },
+  { minutes: 60, label: '1 Stunde' },
+  { minutes: 120, label: '2 Stunden' },
+  { minutes: 180, label: '3 Stunden' },
+]
 const hours = ref<number | string>('')
 const minutes = ref<number | string>('')
 const startMode = ref('now')
@@ -22,6 +29,10 @@ const formError = ref('')
 const errorField = ref('')
 let addressVersion = 0
 let locationVersion = 0
+
+watch(durationChoice, () => {
+  if (errorField.value.startsWith('duration-')) { formError.value = ''; errorField.value = '' }
+})
 
 watch(origin, (value) => {
   ++locationVersion
@@ -120,15 +131,23 @@ function invalid(field: string, message: string) {
 function submit() {
   formError.value = ''
   errorField.value = ''
-  const h = Number(hours.value)
-  const m = Number(minutes.value)
-  const availableMinutes = h * 60 + m
-  const hourInput = document.getElementById('duration-hours') as HTMLInputElement
-  const minuteInput = document.getElementById('duration-minutes') as HTMLInputElement
-  if (!hourInput.validity.valid || !minuteInput.validity.valid || !Number.isSafeInteger(h) || h < 0 || !Number.isSafeInteger(m) || m < 0 || !Number.isSafeInteger(availableMinutes) || availableMinutes <= 0) {
-    invalid('duration-hours', 'Bitte gib eine positive Dauer in ganzen Stunden und Minuten ein.')
+  if (durationChoice.value === null) {
+    invalid('duration-preset-30', 'Bitte wähle eine Dauer oder gib eine eigene Dauer ein.')
     return
   }
+  let availableMinutes: number
+  if (durationChoice.value === 'custom') {
+    const h = Number(hours.value)
+    const m = Number(minutes.value)
+    availableMinutes = h * 60 + m
+    const hourInput = document.getElementById('duration-hours') as HTMLInputElement
+    const minuteInput = document.getElementById('duration-minutes') as HTMLInputElement
+    if (!hourInput.validity.valid || !minuteInput.validity.valid || !Number.isSafeInteger(h) || h < 0 || !Number.isSafeInteger(m) || m < 0 || !Number.isSafeInteger(availableMinutes) || availableMinutes <= 0) {
+      invalid('duration-hours', 'Bitte gib eine positive Dauer in ganzen Stunden und Minuten ein.')
+      return
+    }
+  }
+  else availableMinutes = durationChoice.value
   let startsAt: string
   if (startMode.value === 'now') startsAt = Temporal.Now.zonedDateTimeISO('Europe/Berlin').toString({ timeZoneName: 'never', calendarName: 'never', smallestUnit: 'second' })
   else {
@@ -155,12 +174,21 @@ onBeforeUnmount(() => { ++addressVersion; ++locationVersion })
 <template>
   <form class="search-form" novalidate @submit.prevent="submit">
     <div class="form-heading"><span class="eyebrow">Deine kleine Auszeit</span><h2>Was passt in deinen Tag?</h2></div>
-    <fieldset class="search-field">
+    <fieldset class="search-field" :aria-describedby="errorField.startsWith('duration-') ? 'search-form-error' : undefined">
       <legend><span class="field-number">01</span> Wie viel Zeit hast du?</legend>
-      <div class="duration-inputs">
-        <label class="number-field"><input id="duration-hours" v-model="hours" type="number" min="0" step="1" inputmode="numeric" placeholder="–" :aria-invalid="errorField === 'duration-hours'" :aria-describedby="errorField === 'duration-hours' ? 'search-form-error' : undefined"><span>Stunden</span></label>
-        <span class="duration-divider">:</span>
-        <label class="number-field"><input id="duration-minutes" v-model="minutes" type="number" min="0" step="1" inputmode="numeric" placeholder="–" :aria-invalid="errorField === 'duration-hours'" :aria-describedby="errorField === 'duration-hours' ? 'search-form-error' : undefined"><span>Minuten</span></label>
+      <div class="duration-options">
+        <label v-for="preset in durationPresets" :key="preset.minutes" :class="{ checked: durationChoice === preset.minutes }">
+          <input :id="`duration-preset-${preset.minutes}`" v-model="durationChoice" type="radio" name="duration" :value="preset.minutes" :aria-invalid="errorField === 'duration-preset-30'" :aria-describedby="errorField === 'duration-preset-30' ? 'search-form-error' : undefined">
+          {{ preset.label }}
+        </label>
+        <label class="duration-custom-option" :class="{ checked: durationChoice === 'custom' }">
+          <input v-model="durationChoice" type="radio" name="duration" value="custom" :aria-invalid="errorField === 'duration-preset-30'" :aria-describedby="errorField === 'duration-preset-30' ? 'search-form-error' : undefined">
+          Eigene Dauer
+        </label>
+      </div>
+      <div v-if="durationChoice === 'custom'" class="duration-inputs">
+        <label class="number-field"><span>Stunden</span><input id="duration-hours" v-model="hours" type="number" min="0" step="1" inputmode="numeric" placeholder="0" :aria-invalid="errorField === 'duration-hours'" :aria-describedby="errorField === 'duration-hours' ? 'search-form-error' : undefined"></label>
+        <label class="number-field"><span>Minuten</span><input id="duration-minutes" v-model="minutes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" :aria-invalid="errorField === 'duration-hours'" :aria-describedby="errorField === 'duration-hours' ? 'search-form-error' : undefined"></label>
       </div>
     </fieldset>
     <fieldset class="search-field">
@@ -179,15 +207,14 @@ onBeforeUnmount(() => { ++addressVersion; ++locationVersion })
       <legend><span class="field-number">03</span> Wo startest du?</legend>
       <div class="address-combobox" @focusout="leaveAddress">
         <label class="sr-only" for="address">Adresse in Münster suchen</label>
-        <div class="address-input"><AppIcon name="search" :size="18" /><input id="address" v-model="addressText" type="text" role="combobox" autocomplete="off" placeholder="Adresse in Münster" aria-autocomplete="list" aria-controls="address-suggestions" :aria-expanded="suggestionsOpen" :aria-activedescendant="suggestionsOpen && activeSuggestion >= 0 ? `address-option-${activeSuggestion}` : undefined" :aria-invalid="errorField === 'address'" aria-describedby="address-hint" @input="searchAddresses" @keydown="addressKeydown" @focus="suggestionsOpen = !origin && Boolean(addressText.trim())"><AppIcon v-if="origin" name="check" :size="17" /></div>
+        <div class="address-input"><AppIcon name="search" :size="18" /><input id="address" v-model="addressText" type="text" role="combobox" autocomplete="off" placeholder="Adresse in Münster" aria-autocomplete="list" aria-controls="address-suggestions" :aria-expanded="suggestionsOpen" :aria-activedescendant="suggestionsOpen && activeSuggestion >= 0 ? `address-option-${activeSuggestion}` : undefined" :aria-invalid="errorField === 'address'" @input="searchAddresses" @keydown="addressKeydown" @focus="suggestionsOpen = !origin && Boolean(addressText.trim())"><AppIcon v-if="origin" name="check" :size="17" /></div>
         <div v-if="suggestionsOpen" class="suggestions-popover">
-          <ul id="address-suggestions" role="listbox" aria-label="Beispieladressen in Münster">
+          <ul id="address-suggestions" role="listbox" aria-label="Adressen in Münster">
             <li v-for="(address, index) in suggestions" :id="`address-option-${index}`" :key="address.id" role="option" :aria-selected="index === activeSuggestion" @pointerdown.prevent="chooseAddress(address)"><AppIcon name="pin" :size="16" />{{ address.label }}</li>
           </ul>
-          <p v-if="!suggestions.length" role="status">{{ addressLoading ? 'Adressen werden gesucht …' : addressError || 'Keine Beispieladresse gefunden. Versuche „Domplatz“, „Hafen“ oder „Bahnhof“.' }}</p>
+          <p v-if="!suggestions.length" role="status">{{ addressLoading ? 'Adressen werden gesucht …' : addressError || 'Keine Adresse gefunden. Versuche „Domplatz“, „Hafen“ oder „Bahnhof“.' }}</p>
         </div>
       </div>
-      <small id="address-hint">Lokale Beispieladressen in Münster</small>
       <div class="location-actions">
         <button class="text-button" type="button" :disabled="locating" @click="locate"><AppIcon name="locate" :size="16" />{{ locating ? 'Standort wird ermittelt …' : 'Mein Standort' }}</button>
       </div>

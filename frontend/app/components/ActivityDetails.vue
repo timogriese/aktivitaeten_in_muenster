@@ -41,7 +41,7 @@ defineExpose({ open, close })
       <button ref="closeButton" class="icon-button dialog-close" type="button" aria-label="Details schließen" @click="close"><AppIcon name="close" /></button>
       <ActivityImage :src="activity.imageUrl" :title="activity.title" />
       <div class="detail-content">
-        <span class="eyebrow">{{ activity.category }}<template v-if="activity.kind === 'event'"> · Fiktives Event</template></span>
+        <span class="eyebrow">{{ activity.category }}<template v-if="activity.kind === 'event'"> · Event</template></span>
         <h2 id="detail-title">{{ activity.title }}</h2>
         <p>{{ activity.detailedDescription || activity.description }}</p>
         <dl class="detail-facts">
@@ -50,9 +50,8 @@ defineExpose({ open, close })
           <div v-if="activity.endsAt"><dt><AppIcon name="calendar" />Ende</dt><dd>{{ formatDate(activity.endsAt) }} Uhr (Europe/Berlin)</dd></div>
           <div v-if="activity.openingHoursText"><dt><AppIcon name="clock" />Öffnungszeiten</dt><dd>{{ activity.openingHoursText }}</dd></div>
           <div v-if="activity.timingLabel"><dt><AppIcon name="clock" />Zeitlicher Hinweis</dt><dd>{{ activity.timingLabel }}</dd></div>
-          <div v-if="activity.travelTimeMinutes != null"><dt><AppIcon name="arrow" />Anreise</dt><dd>{{ activity.travelTimeMinutes }} Minuten (Beispiel)</dd></div>
+          <div v-if="activity.travelTimeMinutes != null"><dt><AppIcon name="arrow" />Anreise</dt><dd>{{ activity.travelTimeMinutes }} Minuten</dd></div>
         </dl>
-        <p class="detail-demo">Beispieldaten: Veranstaltungen, Öffnungs- und Reisezeiten sind nicht als aktuelle Angaben verifiziert.</p>
         <div v-if="safeWebsite(activity.websiteUrl)" class="detail-actions">
           <a class="text-link" :href="safeWebsite(activity.websiteUrl)" target="_blank" rel="noopener noreferrer">Website öffnen<AppIcon name="external" :size="16" /><span class="sr-only"> (neuer Tab)</span></a>
         </div>

@@ -88,7 +88,6 @@ onBeforeUnmount(() => { ++searchVersion })
     <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
     <header class="site-header">
       <div class="brand" aria-label="MünsterMatch"><span class="brand-mark"><AppIcon name="arrow" :size="28" /></span><span>MünsterMatch<span class="brand-dot">.</span></span><span class="brand-city">MÜNSTER</span></div>
-      <span class="demo-badge"><span></span>Demo · Beispieldaten</span>
     </header>
     <main id="main-content">
       <section class="intro" aria-labelledby="page-title">
@@ -112,16 +111,15 @@ onBeforeUnmount(() => { ++searchVersion })
           </svg>
           <p class="intro-copy">Date dein Münster</p>
         </div>
-        <div class="intro-stamp" aria-hidden="true"><AppIcon name="sun" :size="32" /><span>Gute Zeit<br>liegt so nah.</span></div>
       </section>
       <div class="workspace">
         <aside class="search-sidebar" aria-label="Aktivitäten suchen">
           <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
           <div class="sidebar-note"><AppIcon name="leaf" :size="21" /><p>Manchmal ist die nächste<br>Auszeit gleich um die Ecke.</p></div>
         </aside>
-        <section class="results-section" :aria-labelledby="searched ? 'results-heading' : undefined" :aria-label="searched ? undefined : 'Entdecken'" :aria-busy="loading">
+        <section class="results-section" :class="{ 'results-section--with-selection': selected }" :aria-labelledby="searched ? 'results-heading' : undefined" :aria-label="searched ? undefined : 'Entdecken'" :aria-busy="loading">
           <div v-if="searched" class="results-toolbar">
-            <div class="result-summary"><h2 id="results-heading">{{ resultHeading }}</h2><span>{{ roundComplete ? shortlist.length : activities.length }} {{ (roundComplete ? shortlist.length : activities.length) === 1 ? 'Aktivität' : 'Aktivitäten' }} · Beispieldaten</span></div>
+            <div class="result-summary"><h2 id="results-heading">{{ resultHeading }}</h2><span>{{ roundComplete ? shortlist.length : activities.length }} {{ (roundComplete ? shortlist.length : activities.length) === 1 ? 'Aktivität' : 'Aktivitäten' }}</span></div>
           </div>
           <div class="sr-only" role="status" aria-atomic="true">{{ announcement }}</div>
           <p v-if="searchError" class="result-error" role="alert">{{ searchError }}</p>
@@ -163,7 +161,7 @@ onBeforeUnmount(() => { ++searchVersion })
         </section>
       </div>
     </main>
-    <footer class="site-footer"><span>Mit Neugier durch Münster.</span><p>Demo mit Beispieldaten. Veranstaltungen und Zeitangaben sind keine verifizierten aktuellen Informationen.</p></footer>
+    <footer class="site-footer"><span>Mit Neugier durch Münster.</span></footer>
     <ActivityDetails ref="details" :activity="detailActivity" />
   </div>
 </template>

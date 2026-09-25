@@ -10,7 +10,7 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'de' },
       title: 'MünsterMatch · Date dein Münster',
       meta: [
-        { name: 'description', content: 'Entdecke Freizeitaktivitäten in Münster – mit deiner Zeit, deinem Startpunkt und Lust auf etwas Neues. Demo mit Beispieldaten.' },
+        { name: 'description', content: 'Entdecke Freizeitaktivitäten in Münster – mit deiner Zeit, deinem Startpunkt und Lust auf etwas Neues.' },
         { name: 'theme-color', content: '#f7f7ef' },
       ],
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
