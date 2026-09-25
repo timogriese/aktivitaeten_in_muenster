@@ -3,81 +3,100 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from datetime import UTC, datetime
+import re
+from datetime import UTC, date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 from app.core.config import settings
-from app.models.activity import ActivityCreate
+from app.core.tags import ALLOWED_TAGS, TAG_GROUPS
+from app.models.activity import (
+    ActivityCreate,
+    GroupType,
+    Location,
+    OpeningHours,
+    Source,
+)
+from app.models.extraction import ExtractedActivity
+from app.services.geocoding_client import GeocodingClient, in_muenster
 from app.services.llm_client import LLMClient
 from app.services.tavily_client import TavilyClient
 
 logger = logging.getLogger(__name__)
 
-# Schema handed to the LLM for extraction. Generated from the Pydantic model so the
-# extraction target and the validation target can never drift apart.
-_ACTIVITY_SCHEMA_JSON = json.dumps(ActivityCreate.model_json_schema())
+_ZONE = ZoneInfo("Europe/Berlin")
+_TAG_LIST = "\n".join(f"- {group}: {', '.join(tags)}" for group, tags in TAG_GROUPS.items())
 
 EXTRACT_SYSTEM_PROMPT = f"""\
-You extract structured data about ONE activity, event, or cool place-to-do-something-at in
-Münster, Germany from a web page's content (given as markdown), and output it as JSON
-matching this schema:
+You extract ONE concrete activity, event or place-to-do-something in Münster, Germany from a
+web page (given as markdown) and answer with JSON matching this schema:
 
-{_ACTIVITY_SCHEMA_JSON}
+{json.dumps(ExtractedActivity.model_json_schema(), ensure_ascii=False)}
+
+Allowed tags - choose ALL that fit (at least one), only from this list, spelled exactly:
+{_TAG_LIST}
 
 Rules:
-- Only extract if the page describes one genuine, concrete activity/event/place actually
-  located in or near Münster, Germany. If it's located somewhere else entirely, or the page
-  has no real single concrete thing to extract (generic homepage, contact/registration form,
-  a listing with no clear single standout, 404/error page), respond with exactly: {{}}
-- Never invent a title like "Not Found", "N/A" or similar placeholder text.
-- Do NOT extract self-help groups, support groups, therapy or crisis services (e.g. for
-  illness, addiction, grief) - only hobby, sport, culture, nature, social or community
-  activities people would do for fun/leisure.
-- title: the concrete, specific name - never a placeholder.
-- description: 1-3 sentences, what it is and what makes it appealing.
-- category: a short category such as "festival", "sport", "culture", "market", "nature", "music".
-- tags: 2-6 short lowercase tags.
-- location: the venue. address = place/street + city; lat/lon = decimal coordinates.
-- group_type: "joinable_group" for a club/association/recurring meetup you can join;
-  "self_organized" for a place/activity idea you'd do with your own group instead.
-- opening_hours.date: ISO date "YYYY-MM-DD" only for a one-time event, else null.
-- opening_hours.start / end: "HH:MM" (24h); for self_organized, the general daily window
-  it's worth doing (e.g. daylight hours). If unknown, use a sensible daytime window.
-- price_eur: entry price in EUR; 0.0 if free.
-- source: set to {{"type": "scraped"}}.
-
-Use only facts present in the page content. Respond with ONLY the JSON object, nothing else -
-no markdown code fences, no explanation.
+- The page must be ABOUT this one activity: a club's training page, a venue's page, an event
+  page. Answer {{}} for "top 10" lists, city or travel guides, directories, news overviews,
+  homepages without one concrete offer, contact/registration forms, and anything outside
+  Münster.
+- Answer {{}} for self-help or support groups, therapy, counselling, crisis services, shops and
+  retail, and membership-only offers you can't just try out.
+- Write title and description in German. Translate if the page is in another language; keep
+  proper names as they are.
+- description: 1-3 sentences - what it is, what you do there, what makes it appealing.
+- address: street and house number if the page gives them, otherwise the named place; always
+  ending in "Münster".
+- group_type: "joinable_group" = an existing group, course, club or event you join;
+  "self_organized" = a place or idea you do with your own people.
+- Times come from the page only (times_stated=true). If the page states no times: for a
+  public outdoor place (park, lake, nature spot, viewpoint) set start and end to null and
+  times_stated=false; for anything else answer {{}}. Never guess times.
+- Recurring session on specific weekdays (e.g. "dienstags 19-21 Uhr"): fill weekdays, start
+  and end, leave date null. Several slots: use the main one.
+- One-time event: date (YYYY-MM-DD) plus start/end. Answer {{}} if it is already over.
+- price_eur: price of one visit if stated, 0 if the page says it's free, otherwise null.
+- Use only facts from the page. Reply with ONLY the JSON object.
 """
 
-# Defense in depth: reject obviously junk titles even if the model ignores the prompt above.
+# Default window for public outdoor places without opening hours (parks, lakes, ...).
+_DAYLIGHT = (time(8, 0), time(20, 0))
 _JUNK_TITLES = {"not found", "n/a", "na", "404", "error", "unknown", ""}
-
 # Keeps the extraction prompt (and cost) bounded regardless of page length.
-_MAX_MARKDOWN_CHARS = 12000
+_MAX_MARKDOWN_CHARS = 20000
+_WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+_MUENSTER_ADDRESS = re.compile(r"münster|\b481\d\d\b", re.IGNORECASE)
+_ENGLISH_WORDS = {"the", "and", "with", "is", "are", "you", "your", "for", "of", "this", "to"}
+_GERMAN_WORDS = {"der", "die", "das", "und", "mit", "ist", "sind", "für", "ein", "eine", "im", "zu"}
+
+
+class Rejected(Exception):
+    """The page was read fine but doesn't yield an activity we want to store."""
 
 
 class ScraperService:
     """Finds activities on the web and turns them into in-memory `ActivityCreate` objects.
 
-    Pipeline:
-      1. Tavily `search` for `query` -> candidate pages, each already including its
-         page content as markdown (one call, no separate scrape step/cost).
-      2. Our own LLM (`LLMClient`, the free gateway model) extracts one structured
-         object per page from that markdown, guided by `ACTIVITY_SCHEMA`.
-      3. validate that JSON into `ActivityCreate` via `_parse_llm_result`.
+    Pipeline per query:
+      1. Tavily `search` -> candidate pages incl. their content as markdown (one call).
+      2. Our own LLM extracts one `ExtractedActivity` per page (German text, tags from
+         shared/tags.json, times only if the page states them).
+      3. `_to_activity` checks and completes it: geocodes the address (must be in Münster),
+         derives the next date for weekly sessions, filters tags, rejects past events,
+         English text and guessed times.
 
-    `scrape()` returns `list[ActivityCreate]` and never writes JSON to disk; the objects are
-    in memory and are pushed to the backend only once they validate. A broken extraction is
-    logged and skipped - one bad page does not abort the rest of the batch.
+    Nothing is written to disk; rejected pages are logged with the reason and skipped.
     """
 
     def __init__(
         self,
         tavily_client: TavilyClient | None = None,
         llm_client: LLMClient | None = None,
+        geocoding_client: GeocodingClient | None = None,
     ) -> None:
         self._tavily_client = tavily_client or TavilyClient()
         self._llm_client = llm_client or LLMClient()
+        self._geocoding_client = geocoding_client or GeocodingClient()
         self._semaphore = asyncio.Semaphore(settings.extraction_concurrency)
 
     async def scrape_many(self, queries: list[str]) -> list[ActivityCreate]:
@@ -97,20 +116,21 @@ class ScraperService:
             return []
 
         logger.info("Search for %r returned %d candidate page(s)", query, len(candidates))
+        today = datetime.now(_ZONE).date()
         scraped_at = datetime.now(UTC).isoformat()
 
         results = await asyncio.gather(
-            *(self._extract_one(candidate, scraped_at) for candidate in candidates),
+            *(self._extract_one(candidate, today, scraped_at) for candidate in candidates),
             return_exceptions=True,
         )
 
         activities: list[ActivityCreate] = []
         for candidate, result in zip(candidates, results):
             url = candidate.get("url")
-            if isinstance(result, Exception):
+            if isinstance(result, Rejected):
+                logger.info("Skipping %s (%s)", url, result)
+            elif isinstance(result, Exception):
                 logger.warning("Skipping %s (extraction failed): %s", url, result)
-            elif result is None:
-                logger.warning("Skipping %s (no extractable activity)", url)
             else:
                 activities.append(result)
 
@@ -122,66 +142,120 @@ class ScraperService:
         )
         return activities
 
-    async def _extract_one(self, candidate: dict, scraped_at: str) -> ActivityCreate | None:
+    async def _extract_one(self, candidate: dict, today: date, scraped_at: str) -> ActivityCreate:
+        url = candidate["url"]
+        markdown = candidate.get("raw_content") or candidate.get("content")
+        if not markdown:
+            raise Rejected("no page content")
+
         async with self._semaphore:
-            url = candidate["url"]
-            markdown = candidate.get("raw_content") or candidate.get("content")
-            if not markdown:
-                return None
+            raw = await self._extract_via_llm(url, markdown, today)
+        if not raw:
+            raise Rejected("no concrete activity on the page")
+        extracted = ExtractedActivity.model_validate(raw)
+        return await self._to_activity(extracted, url, today, scraped_at)
 
-            raw = await self._extract_via_llm(markdown)
-            if not raw:
-                return None
-
-            title = str(raw.get("title", "")).strip()
-            if title.lower() in _JUNK_TITLES:
-                logger.info("Skipping %s (junk title %r)", url, title)
-                return None
-
-            self._stamp_source(raw, url, scraped_at)
-            return self._parse_llm_result(raw)
-
-    async def _extract_via_llm(self, markdown: str) -> dict | None:
+    async def _extract_via_llm(self, url: str, markdown: str, today: date) -> dict:
         content = await self._llm_client.chat(
             messages=[
                 {"role": "system", "content": EXTRACT_SYSTEM_PROMPT},
-                {"role": "user", "content": markdown[:_MAX_MARKDOWN_CHARS]},
+                {
+                    "role": "user",
+                    "content": f"Today is {today.isoformat()}.\nURL: {url}\n\n"
+                    + markdown[:_MAX_MARKDOWN_CHARS],
+                },
             ],
-            max_tokens=600,
+            max_tokens=800,
             response_format={"type": "json_object"},
         )
         return self._parse_json_response(content)
 
-    def _parse_json_response(self, content: str) -> dict | None:
+    def _parse_json_response(self, content: str) -> dict:
         text = content.strip()
         if text.startswith("```"):
             text = text.strip("`")
             if text.lower().startswith("json"):
                 text = text[4:]
             text = text.strip()
-        if not text:
-            return None
         try:
-            data = json.loads(text)
-        except json.JSONDecodeError:
-            logger.warning("LLM extraction did not return valid JSON, skipping")
-            return None
-        return data if isinstance(data, dict) and data else None
+            data = json.loads(text) if text else {}
+        except json.JSONDecodeError as error:
+            raise Rejected("LLM did not return valid JSON") from error
+        if not isinstance(data, dict):
+            raise Rejected("LLM did not return a JSON object")
+        return data
 
-    def _stamp_source(self, raw: dict, url: str, scraped_at: str) -> None:
-        """Force the source block to accurate pipeline values, independent of the model output."""
-        source = raw.get("source")
-        if not isinstance(source, dict):
-            source = {}
-        source["type"] = "scraped"
-        source["url"] = url
-        source["scraped_at"] = scraped_at
-        raw["source"] = source
+    async def _to_activity(
+        self, extracted: ExtractedActivity, url: str, today: date, scraped_at: str
+    ) -> ActivityCreate:
+        title = extracted.title.strip()
+        if title.lower() in _JUNK_TITLES:
+            raise Rejected(f"junk title {title!r}")
+        if _looks_english(f"{title} {extracted.description}"):
+            raise Rejected(f"text not in German: {title!r}")
 
-    def _parse_llm_result(self, raw: dict) -> ActivityCreate:
-        """Validates one extracted JSON object into an ActivityCreate.
+        tags = _allowed_tags(extracted.tags)
+        if not tags:
+            raise Rejected(f"no valid tags in {extracted.tags!r}")
+        # "kostenlos" only when the page says so, never as a guess.
+        if extracted.price_eur == 0 and "kostenlos" not in tags:
+            tags.append("kostenlos")
+        elif extracted.price_eur != 0 and "kostenlos" in tags:
+            tags.remove("kostenlos")
 
-        Raises `pydantic.ValidationError` if it does not match the schema, so broken
-        extractions are skipped by the caller instead of being stored.
-        """
-        return ActivityCreate.model_validate(raw)
+        start, end = extracted.start, extracted.end
+        if not extracted.times_stated or start is None or end is None:
+            if extracted.group_type is GroupType.self_organized and "draußen" in tags:
+                start, end = _DAYLIGHT
+                if "tagsüber" not in tags:
+                    tags.append("tagsüber")
+            else:
+                raise Rejected(f"no times stated on the page for {title!r}")
+
+        event_date = extracted.date
+        if event_date is not None and event_date < today:
+            raise Rejected(f"event already over ({event_date}): {title!r}")
+        if event_date is None and extracted.weekdays:
+            event_date = _next_weekday(today, extracted.weekdays)
+
+        address = extracted.address.strip()
+        # Photon only searches inside Münster, so it would "find" any foreign address there too.
+        if not _MUENSTER_ADDRESS.search(address):
+            raise Rejected(f"address not in Münster: {address!r}")
+        coordinates = await self._geocoding_client.geocode(address)
+        if coordinates is None or not in_muenster(*coordinates):
+            raise Rejected(f"address not found in Münster: {address!r}")
+
+        return ActivityCreate(
+            title=title,
+            description=extracted.description.strip(),
+            category=extracted.category,
+            tags=tags,
+            location=Location(address=address, lat=coordinates[0], lon=coordinates[1]),
+            group_type=extracted.group_type,
+            opening_hours=OpeningHours(date=event_date, start=start, end=end),
+            # The backend requires a price; an unknown one is stored as 0 but not tagged "kostenlos".
+            price_eur=extracted.price_eur if extracted.price_eur is not None else 0.0,
+            source=Source(type="scraped", url=url, scraped_at=scraped_at),
+        )
+
+
+def _allowed_tags(raw_tags: list[str]) -> list[str]:
+    tags = []
+    for tag in raw_tags:
+        normalized = tag.strip().lower()
+        if normalized in ALLOWED_TAGS and normalized not in tags:
+            tags.append(normalized)
+    return tags
+
+
+def _next_weekday(today: date, weekdays: list[str]) -> date:
+    offsets = [(_WEEKDAYS.index(day) - today.weekday()) % 7 for day in weekdays]
+    return today + timedelta(days=min(offsets))
+
+
+def _looks_english(text: str) -> bool:
+    words = re.findall(r"[a-zäöüß]+", text.lower())
+    english = sum(word in _ENGLISH_WORDS for word in words)
+    german = sum(word in _GERMAN_WORDS for word in words)
+    return english > german

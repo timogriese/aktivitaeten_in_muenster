@@ -7,6 +7,8 @@ scheduler = AsyncIOScheduler()
 
 
 def start_scheduler() -> None:
+    if settings.crawl_interval_minutes <= 0:
+        return
     scheduler.add_job(
         crawl_service.run,
         "interval",
@@ -18,4 +20,5 @@ def start_scheduler() -> None:
 
 
 def stop_scheduler() -> None:
-    scheduler.shutdown(wait=False)
+    if scheduler.running:
+        scheduler.shutdown(wait=False)

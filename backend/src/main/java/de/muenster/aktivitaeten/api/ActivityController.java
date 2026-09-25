@@ -26,9 +26,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RequestMapping("/activities")
 public class ActivityController {
     private final ActivityRepository activityRepository;
+    private final TagCatalog tagCatalog;
 
-    public ActivityController(ActivityRepository activityRepository) {
+    public ActivityController(ActivityRepository activityRepository, TagCatalog tagCatalog) {
         this.activityRepository = activityRepository;
+        this.tagCatalog = tagCatalog;
     }
 
     @GetMapping
@@ -41,12 +43,13 @@ public class ActivityController {
         Activity activity = activityRepository.findByTitleIgnoreCase(request.title().trim())
                 .orElse(null);
         boolean created = activity == null;
+        List<String> tags = tagCatalog.clean(request.tags());
         if (created) {
             activity = new Activity(request.title(), request.description(), request.category(),
-                    request.tags(), request.location(), request.groupType(), request.openingHours(),
+                    tags, request.location(), request.groupType(), request.openingHours(),
                     request.priceEur(), request.source());
         } else {
-            activity.update(request.title(), request.description(), request.category(), request.tags(),
+            activity.update(request.title(), request.description(), request.category(), tags,
                     request.location(), request.groupType(), request.openingHours(), request.priceEur(),
                     request.source());
         }
@@ -71,7 +74,7 @@ public class ActivityController {
                 request.title() == null ? activity.getTitle() : request.title(),
                 request.description() == null ? activity.getDescription() : request.description(),
                 request.category() == null ? activity.getCategory() : request.category(),
-                request.tags() == null ? activity.getTags() : request.tags(),
+                request.tags() == null ? activity.getTags() : tagCatalog.clean(request.tags()),
                 request.location() == null ? activity.getLocation() : request.location(),
                 request.groupType() == null ? activity.getGroupType() : request.groupType(),
                 request.openingHours() == null ? activity.getOpeningHours() : request.openingHours(),

@@ -30,4 +30,8 @@ make crawl
 ```
 
 löst einen Crawl-Zyklus aus; die Ergebnisse landen in `activities.db` und sind
-direkt im Frontend suchbar. Alle Targets: `make help`.
+direkt im Frontend suchbar. Für einen größeren Import `make crawl-bulk RUNS=20`.
+Alle Targets: `make help`.
+
+Die erlaubten Tags stehen in [`shared/tags.json`](shared/tags.json) und werden von
+Crawler und Backend gemeinsam genutzt.

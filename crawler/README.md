@@ -86,47 +86,69 @@ Quelle der Wahrheit ist [`app/models/activity.py`](app/models/activity.py). Kurz
 | `opening_hours.start` / `.end` | Uhrzeit — exakter Termin bei fixem Datum, sonst Tagesrahmen (z.B. Öffnungszeiten, Tageslicht-Fenster) |
 | `source.type` | `scraped` (klassisch gefunden), `user_submitted`, oder `ai_suggested` (KI hat eine Möglichkeit selbst erkannt, z.B. "schöner Bach") |
 
-## Scraper-Teil: `services/scraper_service.py` + `services/tavily_client.py` + `services/llm_client.py`
+## Scraper-Teil: `services/scraper_service.py`
 
-`ScraperService.scrape_many(queries)` läuft für alle Queries (aktuell 5, siehe Query-Planung
-unten) parallel und fasst die Ergebnisse zusammen; ruft dafür pro Query `scrape(query)` auf.
-Pipeline pro Query:
+`ScraperService.scrape_many(queries)` läuft für alle Queries eines Zyklus parallel. Pipeline pro
+Query:
 
-1. **Search** — Tavily `POST /search` für `query` (Default: `CRAWLER_DEFAULT_QUERY`) mit `include_raw_content: markdown` liefert Kandidaten-URLs **inklusive** ihres Seiteninhalts in einem einzigen Call (kein separater Scrape-Schritt/-Kosten nötig).
-2. **Extraktion** — das Markdown geht an unser eigenes LLM (`llm_client.py`, MSHack Gateway, kostenloses Modell) mit einem Prompt, der genau ein Objekt gemäß Schema zurückgibt (`response_format: json_object`). Das Schema wird per `ActivityCreate.model_json_schema()` aus dem Pydantic-Modell generiert, sodass Extraktion und Validierung nie auseinanderlaufen.
-3. **Validierung** — das JSON wird per `_parse_llm_result()` gegen `ActivityCreate` validiert. Müll-Ergebnisse (leeres `{}`, Platzhalter-Titel wie "Not Found") werden vorher schon verworfen.
+1. **Search**: Tavily (`tavily_client.py`) liefert Kandidaten-URLs inklusive Seiteninhalt als
+   Markdown in einem Call. Die Suche ist auf Deutschland beschränkt, Social-Media- und
+   Video-Seiten (Facebook, Instagram, TikTok, YouTube, …) sind ausgeschlossen.
+2. **Extraktion**: Unser LLM (`llm_client.py`, MSHack Gateway, kostenlos) füllt pro Seite ein
+   `ExtractedActivity` (`models/extraction.py`, bewusst getrennt vom Backend-Format). Der Prompt
+   verlangt deutschen Text, Tags nur aus [`shared/tags.json`](../shared/tags.json) und Zeiten nur,
+   wenn sie auf der Seite stehen. Übersichts- und Top-10-Seiten, Selbsthilfe- und Beratungsangebote,
+   Shops sowie alles außerhalb Münsters bekommt `{}`.
+3. **Prüfen & Vervollständigen** (`_to_activity`), sonst wird verworfen, mit Grund im Log:
+   - Text auf Englisch → raus.
+   - Keine Zeiten auf der Seite → raus. Ausnahme: öffentliche Orte draußen (Tag `draußen`,
+     `self_organized`) bekommen ein Tageslicht-Fenster 08–20 Uhr plus Tag `tagsüber`.
+   - Wöchentliche Termine (`weekdays`) → `date` = nächster passender Wochentag.
+   - Einmalige Events in der Vergangenheit → raus.
+   - Tags: nur erlaubte, mindestens einer. `kostenlos` nur, wenn die Seite „kostenlos“ sagt
+     (ein unbekannter Preis wird als 0 gespeichert, weil das Backend einen verlangt, aber
+     nicht als `kostenlos` getaggt).
+   - Adresse muss „Münster“ oder PLZ 481xx enthalten und wird per Photon (OpenStreetMap)
+     geocodiert, innerhalb Münsters. Das LLM liefert keine Koordinaten mehr, die hat es
+     früher geraten. Treffer, die nur „die Stadt“ sind, gelten als zu vage.
 
-Pro Query läuft nur **ein** Tavily-Call (statt Search + einzelne Scrapes), bei 1000 kostenlosen
-Credits/Monat — bei 5 parallelen Queries pro Crawl-Zyklus also 5 Tavily-Calls/Zyklus (mehr dazu
-unten bei der Query-Planung). Die eigentliche LLM-Extraktion läuft über das kostenlose
-Gateway-Modell, parallel über alle Queries hinweg (Semaphore = `CRAWLER_EXTRACTION_CONCURRENCY`,
-begrenzt die Gesamt-Parallelität, nicht pro Query). Es wird **keine JSON-Datei** geschrieben:
-Die Objekte existieren nur im Speicher und werden erst nach erfolgreicher Validierung ans
-Backend gepusht. Eine kaputte Extraktion wird geloggt und übersprungen — nur „nicht kaputte"
-Aktivitäten landen in der Datenbank, eine einzelne schlechte Seite lässt den Rest des Crawls
-stehen.
+Ein Zyklus kostet 5 Tavily-Credits (Free-Tier: 1000/Monat). Im Probelauf kamen etwa 3 von 25
+Seiten durch: Qualität vor Menge.
 
-## Query-Planung: `services/query_service.py` + `services/llm_client.py`
+## Tags: [`shared/tags.json`](../shared/tags.json)
 
-`QueryService.next_queries()` generiert pro Crawl-Zyklus **5 Suchanfragen parallel**, jede mit
-ihrem eigenen Prompt/Thema (siehe `_MODE_HINTS` in `query_service.py`): organisierte
-Sport-/Bewegungsgruppen, organisierte Kultur-/Kreativgruppen, coole Natur-/Outdoor-Spots, coole
-soziale/spontane Aktivitätsideen, einmalige Community-Events. Das deckt pro Zyklus eine breite
-Mischung ab statt nur einer Kategorie. Schlägt ein einzelner LLM-Call fehl (fehlender Key,
-Netzwerkfehler, ...), fällt nur diese eine Query auf einen festen Beispielwert zurück — die
-anderen vier laufen normal weiter.
+Feste Tag-Liste, gruppiert nur zur Übersicht. Crawler und Backend lesen dieselbe Datei: Der
+Crawler gibt sie dem LLM vor und filtert dessen Auswahl, das Backend verwirft unbekannte Tags
+beim Speichern und liefert die Liste unter `GET /api/tags` aus. Neue Tags nur dort eintragen.
 
-## Duplikate: Upsert per Titel
+## Query-Planung: `services/query_service.py`
 
-`mock_backend` legt bei `POST /activities` nichts doppelt an: `ActivityStore.create_or_update()`
-sucht nach einer vorhandenen Aktivität mit demselben Titel (normalisiert, ohne
-Groß-/Kleinschreibung) und aktualisiert die bestehende statt eine neue anzulegen. So bleiben
-wiederholt gefundene Aktivitäten (z.B. dieselbe Trainingsgruppe aus zwei verschiedenen Queries,
-oder ein erneuter Crawl-Zyklus) aktuell statt sich zu vervielfachen. Antwortet mit `201` bei
-echtem Neuanlegen, `200` bei Update — `CrawlService` zählt das für `created`/`updated` im
-`/crawl`-Ergebnis aus. Da `BackendClient.push_activities` die Aktivitäten nacheinander (nicht
-parallel) an das Backend schickt, greift der Dedup-Check auch innerhalb eines einzelnen
-Crawl-Zyklus, falls zwei der 5 Queries dieselbe Aktivität finden.
+Pro Zyklus 5 Suchanfragen parallel, je Modus eine: organisierte Sportgruppe, organisierte
+Kultur-/Kreativgruppe, Natur-Spot, soziale Aktivität, einmaliges Event. Jeder Modus bekommt
+ein zufälliges Unterthema (z.B. Bouldern, Töpfern, Rieselfelder, Pubquiz) und die zuletzt
+gestellten Anfragen, damit ein großer Import nicht dieselben Seiten wiederfindet. Die
+Anfragen sind auf Deutsch und zielen auf Seiten zu *einem* Angebot. Schlägt ein LLM-Call fehl,
+fällt nur diese Query auf einen festen Beispielwert zurück.
+
+## Großer Import
+
+```bash
+make crawl-bulk RUNS=20
+```
+
+(vom Repo-Root, während `make dev` läuft): 20 Zyklen nacheinander, also 100 Tavily-Credits.
+Achtung: Der automatische Crawl alle 30 Minuten kostet ebenfalls je 5 Credits;
+`CRAWLER_CRAWL_INTERVAL_MINUTES=0` in `crawler/.env` schaltet ihn ab.
+
+## Duplikate
+
+Das Backend führt per Titel zusammen (gleicher Titel = Update statt neuer Eintrag). Zusätzlich
+gleicht der Crawler vor dem Push mit den vorhandenen Aktivitäten ab (`services/dedup.py`):
+Liegt eine neue Aktivität unter 150 m von einer bestehenden und ist ihr Titel fast gleich
+(„Aasee“ und „Aasee Münster“, „Kreativhaus“ und „Kreativ-Haus“), übernimmt sie deren Titel.
+Die Regel ist bewusst streng: „Malkurs“ und „Töpferkurs“ im selben Haus bleiben getrennt,
+denn ein falsches Zusammenführen überschreibt Daten. Gepusht wird nacheinander, damit das
+auch innerhalb eines Zyklus greift.
 
 ## Backend
 

@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install lint dev crawl backend crawler frontend mock-backend
+.PHONY: help install lint dev crawl crawl-bulk backend crawler frontend mock-backend
 
 help:
 	@echo Globales Makefile - jeder Bereich (backend, crawler, frontend) hat dieselben
@@ -10,6 +10,7 @@ help:
 	@echo   make lint         - Linting in allen Bereichen
 	@echo   make dev          - Backend (8080), Crawler (8000) und Frontend (3000) zusammen starten
 	@echo   make crawl        - Einen Crawl-Zyklus ausloesen (zweites Terminal, waehrend make dev laeuft)
+	@echo   make crawl-bulk   - Mehrere Zyklen am Stueck, z.B. make crawl-bulk RUNS=20 (je 5 Tavily-Credits)
 	@echo   make backend      - nur Backend starten
 	@echo   make crawler      - nur Crawler starten
 	@echo   make frontend     - nur Frontend starten
@@ -32,6 +33,9 @@ dev:
 
 crawl:
 	$(MAKE) -C crawler crawl
+
+crawl-bulk:
+	$(MAKE) -C crawler crawl-bulk
 
 backend:
 	$(MAKE) -C backend dev
