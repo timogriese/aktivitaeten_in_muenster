@@ -39,7 +39,7 @@ defineExpose({ open, close })
   <dialog ref="dialog" class="detail-dialog" aria-labelledby="detail-title" @close="onClose" @click="event => { if (event.target === dialog) close() }">
     <div v-if="activity" class="detail-inner">
       <button ref="closeButton" class="icon-button dialog-close" type="button" aria-label="Details schließen" @click="close"><AppIcon name="close" /></button>
-      <ActivityImage :src="activity.imageUrl" :title="activity.title" />
+      <ActivityImage :src="activity.imageUrl" :title="activity.title" :alt="activity.imageAlt" :position="activity.imagePosition" :credit="activity.imageCredit" />
       <div class="detail-content">
         <span class="eyebrow">{{ activity.category }}<template v-if="activity.kind === 'event'"> · Event</template></span>
         <h2 id="detail-title">{{ activity.title }}</h2>

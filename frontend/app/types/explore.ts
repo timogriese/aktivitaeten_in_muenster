@@ -25,6 +25,14 @@ export interface Activity {
   location: Coordinates
   address: string
   imageUrl?: string
+  imageAlt?: string
+  imagePosition?: string
+  imageCredit?: {
+    author: string
+    sourceUrl: string
+    license: string
+    licenseUrl: string
+  }
   websiteUrl?: string
   startsAt?: string
   endsAt?: string
