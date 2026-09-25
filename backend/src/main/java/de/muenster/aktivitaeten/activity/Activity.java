@@ -13,13 +13,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "activities")
 public class Activity {
+    private static final ZoneId ZONE = ZoneId.of("Europe/Berlin");
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(length = 36, nullable = false, updatable = false)
@@ -57,10 +60,10 @@ public class Activity {
     private ActivitySource source;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
+    private LocalDateTime updatedAt;
 
     protected Activity() {
     }
@@ -95,14 +98,14 @@ public class Activity {
 
     @jakarta.persistence.PrePersist
     void onCreate() {
-        Instant now = Instant.now();
+        LocalDateTime now = LocalDateTime.now(ZONE);
         createdAt = now;
         updatedAt = now;
     }
 
     @jakarta.persistence.PreUpdate
     void onUpdate() {
-        updatedAt = Instant.now();
+        updatedAt = LocalDateTime.now(ZONE);
     }
 
     public String getId() {
@@ -149,12 +152,12 @@ public class Activity {
     }
 
     @JsonProperty("created_at")
-    public Instant getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     @JsonProperty("updated_at")
-    public Instant getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 }

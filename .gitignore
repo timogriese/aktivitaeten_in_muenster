@@ -19,6 +19,7 @@ node_modules/
 # Java (backend) - build output, OSM extract (133 MB) and GraphHopper graph cache
 backend/target/
 backend/data/
+backend/src/main/resources/*.pbf
 
 # Editor
 .vscode/
