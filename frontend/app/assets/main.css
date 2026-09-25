@@ -260,11 +260,8 @@ h1 em { font-weight: 400; color: #55714a; }
   .site-header { min-height: 83px; }
   .brand { font-size: 27px; gap: 8px; }
   .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
-  .intro { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; }
-  .intro-logo { grid-column: 2; grid-row: 1 / 3; }
+  .intro { display: none; }
   h1 { font-size: 40px; letter-spacing: -1.5px; }
-  .intro .eyebrow { font-size: 9px; }
-  .intro-copy { font-size: 12px; }
   .workspace { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .settings-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fffef9; color: var(--green); font-size: 13px; font-weight: 600; }
   .settings-toggle[aria-expanded='true'] svg { transform: rotate(180deg); }
@@ -278,7 +275,7 @@ h1 em { font-weight: 400; color: #55714a; }
   .location-actions { flex-direction: row; flex-wrap: wrap; gap: 12px 22px; }
   .location-actions .text-button { min-height: 40px; }
   .search-submit { min-height: 48px; font-size: 13px; }
-  .results-toolbar { align-items: center; }
+  .results-toolbar { display: none; }
   .result-summary h2 { font-size: 15px; }
   .welcome-card { height: 440px; min-height: 0; }
   .welcome-content { padding: 30px; }
@@ -303,7 +300,6 @@ h1 em { font-weight: 400; color: #55714a; }
   .app-shell { padding: 0 16px; }
   .mobile-break { display: block; }
   h1 { font-size: 40px; line-height: 1.14; }
-  .intro-copy { font-size: 11px; }
   .search-form { padding: 22px; display: block; }
   .form-heading { margin-bottom: 25px; }
   .search-field { margin-bottom: 22px; }
