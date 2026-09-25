@@ -87,7 +87,15 @@ onBeforeUnmount(() => { ++searchVersion })
   <div class="app-shell">
     <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
     <header class="site-header">
-      <div class="brand" aria-label="MünsterMatch"><span class="brand-mark"><AppIcon name="arrow" :size="28" /></span><span>MünsterMatch<span class="brand-dot">.</span></span><span class="brand-city">MÜNSTER</span></div>
+      <div class="brand" aria-label="MünsterMatch">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+            <path d="M26 12c0 7-10 16-10 16S6 19 6 12a10 10 0 0 1 20 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+            <path d="M16 18s-6-3.7-6-7.2a3.3 3.3 0 0 1 6-1.8 3.3 3.3 0 0 1 6 1.8C22 14.3 16 18 16 18Z" fill="currentColor" />
+          </svg>
+        </span>
+        <span>MünsterMatch<span class="brand-dot">.</span></span><span class="brand-city">MÜNSTER</span>
+      </div>
     </header>
     <main id="main-content">
       <section class="intro" aria-labelledby="page-title">

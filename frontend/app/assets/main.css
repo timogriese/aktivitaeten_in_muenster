@@ -46,8 +46,7 @@ h1, h2, h3, p { margin: 0; }
 .app-shell { max-width: 1440px; margin: 0 auto; padding: 0 60px; }
 .site-header { min-height: 106px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); }
 .brand { display: flex; align-items: center; gap: 11px; font-size: 31px; font-weight: 750; letter-spacing: -1.6px; }
-.brand-mark { display: flex; align-items: center; justify-content: center; width: 39px; height: 39px; background: var(--green); color: #e9edcd; border-radius: 13px; transform: rotate(-5deg); }
-.brand-mark svg { transform: rotate(-40deg); }
+.brand-mark { display: flex; align-items: center; justify-content: center; width: 39px; height: 39px; background: var(--green); color: #e9edcd; border-radius: 13px; }
 .brand-dot { color: #7a955a; }
 .brand-city { font-size: 10px; letter-spacing: 2.1px; font-weight: 600; padding-left: 16px; margin-left: 5px; border-left: 1px solid #d9ddcf; color: #69755f; }
 .intro { display: flex; align-items: center; justify-content: space-between; padding: 44px 0 38px; }
