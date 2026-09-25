@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: aktivitaeten-in-muenster-backend
+  datasource:
+    url: jdbc:sqlite:${DATABASE_PATH:./activities.db}
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    open-in-view: false
+
+routing:
+  osm-file: ${ROUTING_OSM_FILE:classpath:muenster-regbez-260924.osm.pbf}
+  destinations-file: ${ROUTING_DESTINATIONS_FILE:classpath:stuff.csv}
+  graph-directory: ${ROUTING_GRAPH_DIRECTORY:${java.io.tmpdir}/aktivitaeten-graph}
+
+python:
+  # Example: PYTHON_SERVICES_GEOCODER=http://localhost:8000/geocode
+  services: {}
