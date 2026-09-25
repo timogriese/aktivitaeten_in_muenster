@@ -59,30 +59,25 @@ public class WalkingRouterService {
             Snap destinationSnap = graph.getLocationIndex().findClosest(
                     destination.latitude(), destination.longitude(), EdgeFilter.ALL_EDGES);
             if (!destinationSnap.isValid()) {
-                results.add(new WalkingRouteResponse.Result(
-                        destination, null, false, "Could not find a routable graph node"));
                 continue;
             }
 
             com.graphhopper.routing.Path path = dijkstra.calcPath(
                     originNode, destinationSnap.getClosestNode());
             if (!path.isFound()) {
-                results.add(new WalkingRouteResponse.Result(
-                        destination, null, false, "No walking route within the walking time limit"));
                 continue;
             }
 
             double seconds = path.getTime() / 1000.0;
-            results.add(new WalkingRouteResponse.Result(
-                    destination, seconds, seconds <= maximumSeconds, null));
+            results.add(new WalkingRouteResponse.Result(destination, seconds));
         }
         return new WalkingRouteResponse(results);
     }
 
     public WalkingRouteRequest testRequest() {
         return new WalkingRouteRequest(
-                new Coordinate(51.9623, 7.6257),
-                15.0);
+                new Coordinate(51.952248, 7.639208),
+                120.0);
     }
 
     private GraphHopper graph() {
