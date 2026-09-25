@@ -1,5 +1,21 @@
+@font-face {
+  font-family: 'Nunito';
+  src: url('/fonts/nunito-variable.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('/fonts/nunito-italic-variable.ttf') format('truetype');
+  font-style: italic;
+  font-weight: 200 1000;
+  font-display: swap;
+}
+
 :root {
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Nunito', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #253c30;
   background: #f7f7ef;
   font-synthesis: none;
@@ -39,12 +55,12 @@ h1, h2, h3, p { margin: 0; }
 .intro { display: flex; align-items: center; justify-content: space-between; padding: 44px 0 38px; }
 .eyebrow { font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: 1.7px; color: #6c7c5e; }
 h1 { font-size: clamp(36px, 3.6vw, 51px); line-height: 1.2; font-weight: 520; letter-spacing: -2px; margin-top: 12px; }
-h1 em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color: #55714a; }
+h1 em { font-weight: 400; color: #55714a; }
 .intro-copy { margin-top: 14px; color: var(--muted); font-size: 14px; }
 .intro-logo { display: block; width: 132px; height: 84px; margin-top: 14px; }
 .mobile-break { display: none; }
 .intro-stamp { display: flex; align-items: center; gap: 13px; margin-right: 22px; color: #6d8050; transform: rotate(5deg); }
-.intro-stamp > span { font-family: Georgia, 'Times New Roman', serif; font-size: 16px; line-height: 1.35; font-style: italic; }
+.intro-stamp > span { font-size: 16px; line-height: 1.35; font-style: italic; }
 .workspace { display: grid; grid-template-columns: 316px minmax(0, 1fr); gap: 32px; align-items: start; }
 .search-sidebar { min-width: 0; }
 .search-form { background: #fffef9; border: 1px solid var(--line); border-radius: 20px; padding: 26px 25px; box-shadow: 0 4px 18px #26382a03; }
@@ -100,7 +116,7 @@ h1 em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color:
 .welcome-content { padding: 46px 36px; height: 100%; display: flex; flex-direction: column; align-items: flex-start; }
 .welcome-label { display: inline-flex; align-items: center; gap: 6px; font-size: 9px; letter-spacing: 1.6px; color: #486244; font-weight: 600; }
 .welcome-content h3 { margin-top: 58px; font-size: clamp(35px, 3.7vw, 54px); line-height: 1.1; font-weight: 500; letter-spacing: -1.9px; color: #284d37; }
-.welcome-content h3 em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color: #4e6a41; }
+.welcome-content h3 em { font-weight: 400; color: #4e6a41; }
 .welcome-content > p { margin-top: 23px; font-size: 13px; line-height: 1.9; max-width: 260px; color: #405d3b; }
 .welcome-footnote { margin-top: auto; font-size: 10px; color: #385333; display: flex; align-items: center; gap: 8px; }
 .welcome-footnote > span { width: 5px; height: 5px; border-radius: 50%; background: #648447; }
@@ -129,7 +145,7 @@ h1 em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color:
 .image-fallback { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: linear-gradient(135deg, #e4e7cc, #b5c79b); color: #5d754b; isolation: isolate; overflow: hidden; }
 .fallback-orbit { position: absolute; width: 360px; height: 360px; border: 1px solid #90a37480; border-radius: 50%; z-index: -1; transform: translate(120px,100px); }
 .fallback-orbit::before { content: ''; position: absolute; inset: 35px; border: 1px solid #90a37466; border-radius: 50%; }
-.fallback-caption { font-family: Georgia, serif; font-size: 20px; font-style: italic; }
+.fallback-caption { font-size: 20px; font-style: italic; }
 .site-footer { margin-top: 50px; padding: 23px 0 28px; border-top: 1px solid var(--line); display: flex; align-items: baseline; justify-content: space-between; gap: 20px; color: #7e8673; font-size: 10px; line-height: 1.7; }
 .site-footer > span { white-space: nowrap; color: #68765b; }
 .site-footer p { max-width: 520px; text-align: right; }
@@ -173,7 +189,7 @@ h1 em { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; color:
 .swipe-hint { text-align: center; margin-top: 14px; font-size: 11px; line-height: 1.7; color: #627158; }
 .round-completion { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 30px 24px; margin-bottom: 20px; border: 1px solid #dce3cb; background: #eef2e3; border-radius: 19px; overflow: hidden; }
 .round-completion > .eyebrow { margin-top: 20px; color: #566c45; font-size: 9px; }
-.round-completion h3 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(24px, 2.6vw, 34px); letter-spacing: -.6px; line-height: 1.25; margin: 10px 0; }
+.round-completion h3 { font-weight: 400; font-size: clamp(24px, 2.6vw, 34px); letter-spacing: -.6px; line-height: 1.25; margin: 10px 0; }
 .round-completion > p:last-child { color: #586a4d; font-size: 12px; line-height: 1.7; }
 .success-emblem { position: relative; display: grid; place-items: center; width: 82px; height: 82px; margin: 8px 0; }
 .success-check { position: relative; width: 70px; height: 70px; padding: 4px; background: #254f3c; border-radius: 50%; color: #f2e8b9; animation: success-arrive .5s cubic-bezier(.2, .8, .3, 1.2) both; }

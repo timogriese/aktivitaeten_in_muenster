@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'de' },
-      title: 'rauszeit · Dein Münster. Deine Auszeit.',
+      title: 'MünsterMatch · Date dein Münster',
       meta: [
         { name: 'description', content: 'Entdecke Freizeitaktivitäten in Münster – mit deiner Zeit, deinem Startpunkt und Lust auf etwas Neues. Demo mit Beispieldaten.' },
         { name: 'theme-color', content: '#f7f7ef' },
