@@ -1,0 +1,16 @@
+[project]
+name = "crawler"
+version = "0.1.0"
+description = "Crawler service for Aktivitäten in Münster"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "httpx>=0.27",
+    "apscheduler>=3.10",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.5",
+]
+
+[tool.uv]
+package = false
