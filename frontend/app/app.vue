@@ -20,7 +20,7 @@ const chosenHeading = ref<HTMLElement>()
 const loading = ref(false)
 const searchError = ref('')
 const details = useTemplateRef('details')
-const resultHeading = computed(() => chosen.value ? 'Deine Entscheidung' : roundComplete.value ? 'Deine Auswahl' : searched.value ? 'Was spricht dich an?' : 'Hier beginnt deine Auszeit')
+const resultHeading = computed(() => chosen.value ? 'Deine Entscheidung' : roundComplete.value ? 'Deine Auswahl' : 'Was spricht dich an?')
 const announcement = computed(() => {
   if (loading.value) return 'Aktivitäten werden geladen.'
   if (chosen.value) return `Deine Auszeit steht fest: ${chosen.value.title}.`
@@ -87,12 +87,31 @@ onBeforeUnmount(() => { ++searchVersion })
   <div class="app-shell">
     <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
     <header class="site-header">
-      <div class="brand" aria-label="rauszeit Münster"><span class="brand-mark"><AppIcon name="arrow" :size="28" /></span><span>rauszeit<span class="brand-dot">.</span></span><span class="brand-city">MÜNSTER</span></div>
+      <div class="brand" aria-label="MünsterMatch"><span class="brand-mark"><AppIcon name="arrow" :size="28" /></span><span>MünsterMatch<span class="brand-dot">.</span></span><span class="brand-city">MÜNSTER</span></div>
       <span class="demo-badge"><span></span>Demo · Beispieldaten</span>
     </header>
     <main id="main-content">
       <section class="intro" aria-labelledby="page-title">
-        <div><p class="eyebrow">Weniger überlegen. Mehr erleben.</p><h1 id="page-title">Dein Münster.<br class="mobile-break"> <em>Deine Auszeit.</em></h1><p class="intro-copy">Drei gute Ideen. Eine leichte Entscheidung. Und los.</p></div>
+        <div>
+          <p class="eyebrow">Weniger überlegen. Mehr erleben.</p>
+          <h1 id="page-title" class="sr-only">MünsterMatch</h1>
+          <svg class="intro-logo" viewBox="0 0 132 84" fill="none" role="img" aria-label="Drei Aktivitätskarten mit einem Herz als Match-Symbol">
+            <g transform="rotate(-15 36 46)">
+              <rect x="12" y="17" width="47" height="59" rx="11" fill="#e6edda" stroke="#a8bb91" />
+              <path d="M42 30c-16-1-24 9-18 17s19 1 18-17Z" fill="#afc58f" stroke="#65804d" stroke-width="1.5" />
+              <path d="m23 51 12-13" stroke="#65804d" stroke-width="1.5" stroke-linecap="round" />
+            </g>
+            <g transform="rotate(15 96 46)">
+              <rect x="73" y="17" width="47" height="59" rx="11" fill="#f2e9cc" stroke="#d1bd83" />
+              <circle cx="97" cy="39" r="8" fill="#e0bf67" />
+              <path d="M97 25v3m0 22v3M83 39h3m22 0h3M87 29l2 2m16 16 2 2M87 49l2-2m16-16 2-2" stroke="#a88636" stroke-width="1.5" stroke-linecap="round" />
+            </g>
+            <rect x="40" y="7" width="52" height="66" rx="13" fill="#254f3c" stroke="#f7f7ef" stroke-width="3" />
+            <path d="M66 51s-15-9-15-19a8 8 0 0 1 15-4 8 8 0 0 1 15 4c0 10-15 19-15 19Z" fill="#e6edc8" />
+            <path d="M60 61h12" stroke="#a8c08a" stroke-width="3" stroke-linecap="round" />
+          </svg>
+          <p class="intro-copy">Date dein Münster</p>
+        </div>
         <div class="intro-stamp" aria-hidden="true"><AppIcon name="sun" :size="32" /><span>Gute Zeit<br>liegt so nah.</span></div>
       </section>
       <div class="workspace">
@@ -100,9 +119,9 @@ onBeforeUnmount(() => { ++searchVersion })
           <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
           <div class="sidebar-note"><AppIcon name="leaf" :size="21" /><p>Manchmal ist die nächste<br>Auszeit gleich um die Ecke.</p></div>
         </aside>
-        <section class="results-section" aria-labelledby="results-heading" :aria-busy="loading">
-          <div class="results-toolbar">
-            <div class="result-summary"><h2 id="results-heading">{{ resultHeading }}</h2><span v-if="searched">{{ roundComplete ? shortlist.length : activities.length }} {{ (roundComplete ? shortlist.length : activities.length) === 1 ? 'Aktivität' : 'Aktivitäten' }} · Beispieldaten</span><span v-else>Münster wartet auf dich</span></div>
+        <section class="results-section" :aria-labelledby="searched ? 'results-heading' : undefined" :aria-label="searched ? undefined : 'Entdecken'" :aria-busy="loading">
+          <div v-if="searched" class="results-toolbar">
+            <div class="result-summary"><h2 id="results-heading">{{ resultHeading }}</h2><span>{{ roundComplete ? shortlist.length : activities.length }} {{ (roundComplete ? shortlist.length : activities.length) === 1 ? 'Aktivität' : 'Aktivitäten' }} · Beispieldaten</span></div>
           </div>
           <div class="sr-only" role="status" aria-atomic="true">{{ announcement }}</div>
           <p v-if="searchError" class="result-error" role="alert">{{ searchError }}</p>
