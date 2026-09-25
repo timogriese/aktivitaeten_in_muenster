@@ -19,6 +19,26 @@ class ActivityStore:
         self._activities[activity.id] = activity
         return activity
 
+    def find_by_title(self, title: str) -> Activity | None:
+        normalized = title.strip().lower()
+        return next(
+            (a for a in self._activities.values() if a.title.strip().lower() == normalized),
+            None,
+        )
+
+    def create_or_update(self, data: ActivityCreate) -> tuple[Activity, bool]:
+        """Upserts by title: same title -> refresh the existing entry instead of duplicating it.
+
+        Returns (activity, created) - created is False when an existing activity was updated.
+        """
+        existing = self.find_by_title(data.title)
+        if existing is None:
+            return self.create(data), True
+
+        updated = existing.model_copy(update={**data.model_dump(), "updated_at": datetime.utcnow()})
+        self._activities[existing.id] = updated
+        return updated, False
+
     def update(self, activity_id: UUID, data: ActivityUpdate) -> Activity | None:
         existing = self._activities.get(activity_id)
         if existing is None:

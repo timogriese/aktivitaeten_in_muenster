@@ -71,7 +71,7 @@ mock_backend/            # Platzhalter-Backend (Port 8001), bis das echte Backen
   main.py                    # CRUD: POST/GET/GET-by-id/PUT/DELETE /activities
 ```
 
-`main.py` -> `api/routes.py` -> `services/crawl_service.py` -> `services/query_service.py` + `services/scraper_service.py` + `services/backend_client.py`. Der Scheduler (`scheduler.py`) ruft denselben `crawl_service.run()` auf wie der `/crawl`-Endpoint — ein manueller Trigger und ein Cron-Lauf verhalten sich identisch. `/crawl` nimmt bewusst keinen Input entgegen: `CrawlService` holt sich die Suchanfrage selbst von `QueryService`, statt sie vom Aufrufer zu bekommen.
+`main.py` -> `api/routes.py` -> `services/crawl_service.py` -> `services/query_service.py` + `services/scraper_service.py` + `services/backend_client.py`. Der Scheduler (`scheduler.py`) ruft denselben `crawl_service.run()` auf wie der `/crawl`-Endpoint — ein manueller Trigger und ein Cron-Lauf verhalten sich identisch. `/crawl` nimmt bewusst keinen Input entgegen: `CrawlService` holt sich die Suchanfragen selbst von `QueryService`, statt sie vom Aufrufer zu bekommen. Response-Shape: `{"queries": [...], "found": N, "created": N, "updated": N}` (`created`/`updated` siehe Dedup unten).
 
 ## Datenmodell
 
@@ -86,20 +86,45 @@ Quelle der Wahrheit ist [`app/models/activity.py`](app/models/activity.py). Kurz
 
 ## Scraper-Teil: `services/scraper_service.py` + `services/tavily_client.py` + `services/llm_client.py`
 
-`ScraperService.scrape(query)` ist der Einstiegspunkt. Pipeline:
+`ScraperService.scrape_many(queries)` läuft für alle Queries (aktuell 5, siehe Query-Planung
+unten) parallel und fasst die Ergebnisse zusammen; ruft dafür pro Query `scrape(query)` auf.
+Pipeline pro Query:
 
 1. **Search** — Tavily `POST /search` für `query` (Default: `CRAWLER_DEFAULT_QUERY`) mit `include_raw_content: markdown` liefert Kandidaten-URLs **inklusive** ihres Seiteninhalts in einem einzigen Call (kein separater Scrape-Schritt/-Kosten nötig).
 2. **Extraktion** — das Markdown geht an unser eigenes LLM (`llm_client.py`, MSHack Gateway, kostenloses Modell) mit einem Prompt, der genau ein Objekt gemäß Schema zurückgibt (`response_format: json_object`). Das Schema wird per `ActivityCreate.model_json_schema()` aus dem Pydantic-Modell generiert, sodass Extraktion und Validierung nie auseinanderlaufen.
 3. **Validierung** — das JSON wird per `_parse_llm_result()` gegen `ActivityCreate` validiert. Müll-Ergebnisse (leeres `{}`, Platzhalter-Titel wie "Not Found") werden vorher schon verworfen.
 
-Damit läuft pro Crawl-Zyklus nur noch **ein** Tavily-Call (statt Search + einzelne Scrapes), bei 1000 kostenlosen Credits/Monat. Die eigentliche LLM-Extraktion läuft über das kostenlose Gateway-Modell, parallel (Semaphore = `CRAWLER_EXTRACTION_CONCURRENCY`). Es wird **keine JSON-Datei** geschrieben: Die Objekte existieren nur im Speicher und werden erst nach erfolgreicher Validierung ans Backend gepusht. Eine kaputte Extraktion wird geloggt und übersprungen — nur „nicht kaputte" Aktivitäten landen in der Datenbank, eine einzelne schlechte Seite lässt den Rest des Crawls stehen.
+Pro Query läuft nur **ein** Tavily-Call (statt Search + einzelne Scrapes), bei 1000 kostenlosen
+Credits/Monat — bei 5 parallelen Queries pro Crawl-Zyklus also 5 Tavily-Calls/Zyklus (mehr dazu
+unten bei der Query-Planung). Die eigentliche LLM-Extraktion läuft über das kostenlose
+Gateway-Modell, parallel über alle Queries hinweg (Semaphore = `CRAWLER_EXTRACTION_CONCURRENCY`,
+begrenzt die Gesamt-Parallelität, nicht pro Query). Es wird **keine JSON-Datei** geschrieben:
+Die Objekte existieren nur im Speicher und werden erst nach erfolgreicher Validierung ans
+Backend gepusht. Eine kaputte Extraktion wird geloggt und übersprungen — nur „nicht kaputte"
+Aktivitäten landen in der Datenbank, eine einzelne schlechte Seite lässt den Rest des Crawls
+stehen.
 
 ## Query-Planung: `services/query_service.py` + `services/llm_client.py`
 
-`QueryService.next_query()` fragt das LLM (MSHack AI Gateway, `CRAWLER_LLM_MODEL`, Default
-`DeepSeek-V4-Flash`, OpenAI-kompatibel) nach einer neuen Suchanfrage für Aktivitäten in Münster.
-Schlägt der Call fehl (fehlender Key, Netzwerkfehler, ...), fällt es auf einen festen
-Beispiel-Pool zurück, damit ein Crawl-Zyklus trotzdem laufen kann.
+`QueryService.next_queries()` generiert pro Crawl-Zyklus **5 Suchanfragen parallel**, jede mit
+ihrem eigenen Prompt/Thema (siehe `_MODE_HINTS` in `query_service.py`): organisierte
+Sport-/Bewegungsgruppen, organisierte Kultur-/Kreativgruppen, coole Natur-/Outdoor-Spots, coole
+soziale/spontane Aktivitätsideen, einmalige Community-Events. Das deckt pro Zyklus eine breite
+Mischung ab statt nur einer Kategorie. Schlägt ein einzelner LLM-Call fehl (fehlender Key,
+Netzwerkfehler, ...), fällt nur diese eine Query auf einen festen Beispielwert zurück — die
+anderen vier laufen normal weiter.
+
+## Duplikate: Upsert per Titel
+
+`mock_backend` legt bei `POST /activities` nichts doppelt an: `ActivityStore.create_or_update()`
+sucht nach einer vorhandenen Aktivität mit demselben Titel (normalisiert, ohne
+Groß-/Kleinschreibung) und aktualisiert die bestehende statt eine neue anzulegen. So bleiben
+wiederholt gefundene Aktivitäten (z.B. dieselbe Trainingsgruppe aus zwei verschiedenen Queries,
+oder ein erneuter Crawl-Zyklus) aktuell statt sich zu vervielfachen. Antwortet mit `201` bei
+echtem Neuanlegen, `200` bei Update — `CrawlService` zählt das für `created`/`updated` im
+`/crawl`-Ergebnis aus. Da `BackendClient.push_activities` die Aktivitäten nacheinander (nicht
+parallel) an das Backend schickt, greift der Dedup-Check auch innerhalb eines einzelnen
+Crawl-Zyklus, falls zwei der 5 Queries dieselbe Aktivität finden.
 
 ## Mock-Backend ablösen
 

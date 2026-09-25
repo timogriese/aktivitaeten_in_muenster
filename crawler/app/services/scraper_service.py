@@ -80,6 +80,15 @@ class ScraperService:
         self._llm_client = llm_client or LLMClient()
         self._semaphore = asyncio.Semaphore(settings.extraction_concurrency)
 
+    async def scrape_many(self, queries: list[str]) -> list[ActivityCreate]:
+        """Runs `scrape()` for each query in parallel and combines the results.
+
+        Extraction across all of them still shares one `_semaphore`, so total LLM
+        concurrency stays bounded regardless of how many queries are run at once.
+        """
+        results = await asyncio.gather(*(self.scrape(query) for query in queries))
+        return [activity for batch in results for activity in batch]
+
     async def scrape(self, query: str | None = None) -> list[ActivityCreate]:
         query = query or settings.default_query
         candidates = await self._tavily_client.search(query, limit=settings.tavily_search_limit)

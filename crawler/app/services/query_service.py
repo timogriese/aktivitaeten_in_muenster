@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 
 import httpx
@@ -14,69 +15,82 @@ Germany. Favor smaller, lesser-known possibilities over big well-known venues. \
 Reply with ONLY the search query text, nothing else - no quotes, no explanation.
 """
 
-# Alternates every call so both kinds of activity get found over time, not just
-# whichever the model defaults to.
+# One distinct prompt per parallel search, so a single crawl cycle covers different
+# kinds of results instead of five near-identical queries.
 _MODE_HINTS = [
     (
-        "This time: find an ORGANIZED group or club you can join - an open training, "
-        "a recurring meetup, a rehearsal, a class - something with an existing group "
-        "of people you'd show up and join."
+        "Find an ORGANIZED sport/movement club or group you can join - an open "
+        "training, a recurring practice session, a class - something with an "
+        "existing group of people you'd show up and join."
     ),
     (
-        "This time: find a COOL PLACE or self-organized activity idea - a scenic spot, "
-        "a viewpoint, a trail, a lake/canal spot, something you'd do with your own "
-        "group of friends rather than joining an existing one. Look for city guides, "
-        "blog posts or \"best spots in Münster\" style pages."
+        "Find an ORGANIZED culture/creative group or class you can join - a choir, "
+        "a band, a theatre group, an art or craft workshop, a language exchange - "
+        "again something with an existing group you'd join."
+    ),
+    (
+        "Find a COOL NATURE OR OUTDOOR SPOT - a scenic place, a viewpoint, a trail, "
+        "a lake/canal spot - something you'd go do yourself with your own group of "
+        "friends rather than joining an existing one. Look for city guides, blog "
+        "posts or \"best spots in Münster\" style pages."
+    ),
+    (
+        "Find a COOL SOCIAL OR SPONTANEOUS ACTIVITY IDEA - something you'd try with "
+        "your own group of friends (not joining an existing group), like a fun "
+        "cafe, a game spot, an unusual thing to do together."
+    ),
+    (
+        "Find a ONE-OFF COMMUNITY EVENT happening soon - a market, a festival, a "
+        "pop-up, a one-time event rather than a recurring group or a fixed place."
     ),
 ]
 
-# Used if the LLM call fails (missing key, network error, ...) so a crawl cycle
-# can still run. Alternates between the two modes too.
+# Used if an LLM call fails (missing key, network error, ...) so a crawl cycle can
+# still run. One fallback per mode, in the same order as _MODE_HINTS.
 _FALLBACK_QUERIES = [
     "offenes Training Sportverein Münster",
+    "offene Chorprobe Kunstwerkstatt Münster",
     "schönste Aussichtspunkte Münster",
-    "Meetup Münster kostenlos",
-    "versteckte Orte Münster Ausflug",
-    "Vereinstreffen Münster Anfänger willkommen",
-    "schöne Spots am Kanal Münster",
-    "offene Chorprobe Münster",
-    "geheimtipps Münster Freizeit",
+    "schöne Spots am Kanal Münster Freunde",
+    "Wochenmarkt Festival Münster diese Woche",
 ]
 
 
 class QueryService:
-    """Comes up with the next search query for a crawl cycle, via the LLM.
+    """Comes up with the next batch of search queries for a crawl cycle, via the LLM.
 
-    Alternates between two modes across calls - organized/joinable groups, and
-    cool self-organized places/activities - so the crawl doesn't only ever find
-    one kind of result.
+    One query per mode in `_MODE_HINTS`, generated in parallel, so each crawl
+    covers organized groups, cool self-organized spots, and one-off events alike
+    instead of only ever finding one kind of result.
     """
 
     def __init__(self, llm_client: LLMClient | None = None) -> None:
         self._llm_client = llm_client or LLMClient()
-        self._call_count = 0
-        self._fallback_index = 0
 
-    async def next_query(self) -> str:
-        mode_hint = _MODE_HINTS[self._call_count % len(_MODE_HINTS)]
-        self._call_count += 1
+    async def next_queries(self) -> list[str]:
+        results = await asyncio.gather(
+            *(self._generate_for_hint(hint) for hint in _MODE_HINTS),
+            return_exceptions=True,
+        )
+        queries = []
+        for index, result in enumerate(results):
+            if isinstance(result, BaseException) or not result:
+                if isinstance(result, BaseException):
+                    logger.warning("Query generation failed for mode %d: %s", index, result)
+                queries.append(_FALLBACK_QUERIES[index])
+            else:
+                queries.append(result)
+        return queries
 
+    async def _generate_for_hint(self, hint: str) -> str | None:
         try:
             content = await self._llm_client.chat(
                 messages=[
                     {"role": "system", "content": _BASE_PROMPT},
-                    {"role": "user", "content": mode_hint},
+                    {"role": "user", "content": hint},
                 ],
                 max_tokens=60,
             )
         except (httpx.HTTPError, RuntimeError, KeyError, IndexError):
-            logger.exception("LLM query generation failed, falling back to a fixed query")
-            return self._next_fallback_query()
-
-        query = content.strip().strip('"')
-        return query or self._next_fallback_query()
-
-    def _next_fallback_query(self) -> str:
-        query = _FALLBACK_QUERIES[self._fallback_index % len(_FALLBACK_QUERIES)]
-        self._fallback_index += 1
-        return query
+            return None
+        return content.strip().strip('"') or None

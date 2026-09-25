@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 
 from .models import Activity, ActivityCreate, ActivityUpdate
 from .storage_service import ActivityStore
@@ -19,9 +19,12 @@ async def list_activities() -> list[Activity]:
     return store.list()
 
 
-@app.post("/activities", response_model=Activity, status_code=201)
-async def create_activity(activity: ActivityCreate) -> Activity:
-    return store.create(activity)
+@app.post("/activities", response_model=Activity)
+async def create_activity(activity: ActivityCreate, response: Response) -> Activity:
+    """Upserts by title - a matching existing activity is updated (200), not duplicated (201)."""
+    result, created = store.create_or_update(activity)
+    response.status_code = 201 if created else 200
+    return result
 
 
 @app.get("/activities/{activity_id}", response_model=Activity)

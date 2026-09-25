@@ -10,11 +10,12 @@ logger = logging.getLogger(__name__)
 
 
 class CrawlService:
-    """Orchestrates one crawl cycle: come up with a query, scrape, push to the backend.
+    """Orchestrates one crawl cycle: come up with queries, scrape them in parallel,
+    push results to the backend.
 
     Used by both the `/crawl` endpoint and the periodic scheduler job, so a run
     triggered manually and a run triggered by cron behave identically. Takes no
-    input - the query comes from `QueryService`, not from the caller.
+    input - the queries come from `QueryService`, not from the caller.
     """
 
     def __init__(
@@ -28,13 +29,20 @@ class CrawlService:
         self._query_service = query_service or QueryService()
 
     async def run(self) -> dict:
-        query = await self._query_service.next_query()
-        found = await self._scraper_service.scrape(query)
-        created = await self._backend_client.push_activities(found)
+        queries = await self._query_service.next_queries()
+        found = await self._scraper_service.scrape_many(queries)
+        pushed = await self._backend_client.push_activities(found)
+
+        created = sum(1 for _, is_new in pushed if is_new)
+        updated = len(pushed) - created
         logger.info(
-            "Crawl finished: query=%r found=%d created=%d", query, len(found), len(created)
+            "Crawl finished: queries=%r found=%d created=%d updated=%d",
+            queries,
+            len(found),
+            created,
+            updated,
         )
-        return {"query": query, "found": len(found), "created": len(created)}
+        return {"queries": queries, "found": len(found), "created": created, "updated": updated}
 
 
 crawl_service = CrawlService()
