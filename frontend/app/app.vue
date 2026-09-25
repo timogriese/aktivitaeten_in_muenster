@@ -94,14 +94,10 @@ onBeforeUnmount(() => { ++searchVersion })
             <path d="M16 18s-6-3.7-6-7.2a3.3 3.3 0 0 1 6-1.8 3.3 3.3 0 0 1 6 1.8C22 14.3 16 18 16 18Z" fill="currentColor" />
           </svg>
         </span>
-        <span>MünsterMatch<span class="brand-dot">.</span></span><span class="brand-city">MÜNSTER</span>
+        <span>MünsterMatch<span class="brand-dot">.</span></span>
       </div>
-    </header>
-    <main id="main-content">
-      <section class="intro" aria-labelledby="page-title">
-        <div>
+      <div class="intro">
           <p class="eyebrow">Weniger überlegen. Mehr erleben.</p>
-          <h1 id="page-title" class="sr-only">MünsterMatch</h1>
           <svg class="intro-logo" viewBox="0 0 132 84" fill="none" role="img" aria-label="Drei Aktivitätskarten mit einem Herz als Match-Symbol">
             <g transform="rotate(-15 36 46)">
               <rect x="12" y="17" width="47" height="59" rx="11" fill="#e6edda" stroke="#a8bb91" />
@@ -118,8 +114,10 @@ onBeforeUnmount(() => { ++searchVersion })
             <path d="M60 61h12" stroke="#a8c08a" stroke-width="3" stroke-linecap="round" />
           </svg>
           <p class="intro-copy">Date dein Münster</p>
-        </div>
-      </section>
+      </div>
+    </header>
+    <main id="main-content">
+      <h1 id="page-title" class="sr-only">MünsterMatch</h1>
       <div class="workspace">
         <aside class="search-sidebar" aria-label="Aktivitäten suchen">
           <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
