@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Finds activities that fit a time budget: reachable on foot from the origin, and open (or
@@ -38,17 +37,17 @@ public class ExploreService {
     private static final int MAX_RESULTS = 20;
     private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm");
 
-    // Crawled categories are free-form English; the frontend picks icons by these German labels.
+    // The crawler's fixed categories (crawler/app/models/extraction.py) mapped to the German
+    // labels the frontend shows and picks icons by.
     private static final Map<String, String> CATEGORY_LABELS = Map.ofEntries(
             Map.entry("sport", "Sport & Bewegung"),
             Map.entry("nature", "Natur & draußen"),
-            Map.entry("natur", "Natur & draußen"),
             Map.entry("culture", "Kunst & Kultur"),
-            Map.entry("art", "Kunst & Kultur"),
-            Map.entry("workshop", "Kunst & Kultur"),
-            Map.entry("tour", "Kunst & Kultur"),
+            Map.entry("creative", "Kunst & Kultur"),
             Map.entry("music", "Musik & Bühne"),
-            Map.entry("festival", "Musik & Bühne"));
+            Map.entry("food", "Essen & Trinken"),
+            Map.entry("market", "Märkte & Stadtleben"),
+            Map.entry("social", "Treffen & Geselliges"));
 
     private final ActivityRepository activityRepository;
     private final WalkingRouterService walkingRouterService;
@@ -68,7 +67,7 @@ public class ExploreService {
         WalkingRouteRequest walking = new WalkingRouteRequest(
                 new Coordinate(request.origin().lat(), request.origin().lng()), maxTravelMinutes);
         // Only activities reachable within maxTravelMinutes come back.
-        Map<UUID, Double> secondsByActivity = new HashMap<>();
+        Map<String, Double> secondsByActivity = new HashMap<>();
         for (WalkingRouteResponse.Result route : walkingRouterService.route(walking).routes()) {
             secondsByActivity.put(route.activityId(), route.durationSeconds());
         }
@@ -133,7 +132,7 @@ public class ExploreService {
         }
 
         return new ExploreActivity(
-                activity.getId().toString(),
+                activity.getId(),
                 activity.getTitle(),
                 activity.getDescription(),
                 event ? "event" : "place",

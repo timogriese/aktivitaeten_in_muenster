@@ -1,6 +1,8 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install dev mock-backend crawl lint clean
+.PHONY: help install dev mock-backend crawl crawl-bulk lint clean
+
+RUNS ?= 10
 
 help:
 	@echo Targets:
@@ -8,6 +10,7 @@ help:
 	@echo   make dev           - Crawler-Service starten (Port 8000)
 	@echo   make mock-backend  - Mock-Backend starten (Port 8001)
 	@echo   make crawl         - POST /crawl manuell triggern (Crawler muss laufen)
+	@echo   make crawl-bulk    - RUNS Crawl-Zyklen nacheinander (Default 10, je 5 Tavily-Credits)
 	@echo   make lint          - Linting (ruff)
 	@echo   make clean         - __pycache__-Ordner aufraeumen
 
@@ -22,6 +25,9 @@ mock-backend:
 
 crawl:
 	curl -s -X POST http://localhost:8000/crawl
+
+crawl-bulk:
+	uv run python -c "import httpx; [print(httpx.post('http://localhost:8000/crawl', timeout=900).text, flush=True) for _ in range($(RUNS))]"
 
 lint:
 	uv run ruff check .

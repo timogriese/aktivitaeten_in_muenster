@@ -4,6 +4,18 @@ import httpx
 
 from app.core.config import settings
 
+# Posts/videos rarely describe one concrete activity with address and times.
+_EXCLUDED_DOMAINS = [
+    "facebook.com",
+    "instagram.com",
+    "tiktok.com",
+    "youtube.com",
+    "x.com",
+    "twitter.com",
+    "pinterest.com",
+    "reddit.com",
+]
+
 
 class TavilyClient:
     """Thin async client for the Tavily Search API.
@@ -26,7 +38,13 @@ class TavilyClient:
 
     async def search(self, query: str, limit: int = 5) -> list[dict]:
         """Web search -> candidate pages, each with its markdown content included."""
-        payload = {"query": query, "max_results": limit, "include_raw_content": "markdown"}
+        payload = {
+            "query": query,
+            "max_results": limit,
+            "include_raw_content": "markdown",
+            "country": "germany",
+            "exclude_domains": _EXCLUDED_DOMAINS,
+        }
         async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
                 f"{self._base_url}/search", headers=self._headers(), json=payload

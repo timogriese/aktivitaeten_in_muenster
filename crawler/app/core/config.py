@@ -9,7 +9,14 @@ _ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 class Settings(BaseSettings):
     # Spring Boot backend (backend/). The Python mock_backend runs on 8001 instead.
     backend_url: str = "http://localhost:8080"
+    # Background crawl interval; 0 disables it. Each cycle costs 5 Tavily credits.
     crawl_interval_minutes: int = 30
+
+    # Photon geocoder (komoot, OpenStreetMap data, free, no key).
+    geocoding_url: str = "https://photon.komoot.io"
+    geocoding_user_agent: str = (
+        "MuensterMatch-Hackathon/0.1 (+https://github.com/timogriese/aktivitaeten_in_muenster)"
+    )
 
     # Tavily (search + page content in one call). Free tier: 1000 credits/month.
     tavily_api_key: str = ""
