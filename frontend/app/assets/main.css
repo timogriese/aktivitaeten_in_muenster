@@ -103,13 +103,10 @@ h1 em { font-weight: 400; color: #55714a; }
 .location-field { margin-bottom: 22px; }
 .primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 13px; min-height: 46px; background: var(--green); border: 1px solid transparent; border-radius: 9px; padding: 12px 19px; color: #fffef5; font-weight: 500; font-size: 12px; }
 .search-submit { width: 100%; justify-content: space-between; font-size: 12px; }
-.sidebar-note { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 22px; color: #768267; }
-.sidebar-note p { font-size: 11px; line-height: 1.8; }
 .results-section { min-width: 0; }
 .results-section--with-selection { display: flex; flex-direction: column; }
 .results-section--with-selection > .discover-view { order: -1; }
-.results-section--with-selection > .results-toolbar { margin-top: 18px; }
-.results-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 0 0 18px; min-height: 45px; }
+.results-toolbar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; min-height: 45px; }
 .result-summary h2 { font-size: 15px; font-weight: 600; letter-spacing: -.25px; }
 .result-summary > span { display: block; color: var(--muted); font-size: 10px; margin-top: 5px; }
 .welcome-card { height: 530px; min-height: 460px; overflow: hidden; border-radius: 20px; position: relative; background: #dde5ca; isolation: isolate; border: 1px solid #dde3ce; }
@@ -138,8 +135,6 @@ h1 em { font-weight: 400; color: #55714a; }
 .card-more { margin-top: 21px; }
 .timing-info { display: flex; flex-wrap: wrap; gap: 8px 17px; margin-top: 17px; color: #5e7054; font-size: 11px; line-height: 1.5; }
 .timing-info > span { display: inline-flex; gap: 6px; align-items: center; }
-.results-footnote { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 10px; color: #768168; text-align: center; line-height: 1.6; margin: 22px 0 0; }
-.tiny-star { color: #829659; font-size: 20px; }
 .result-error { padding: 15px 18px; background: #fbece2; color: #87422c; border: 1px solid #edc9b4; border-radius: 10px; margin-bottom: 15px; font-size: 13px; line-height: 1.6; }
 .empty-result { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 250px; padding: 32px; background: #ecf0e1; border: 1px solid var(--line); border-radius: 18px; margin-bottom: 16px; }
 .empty-result h3 { font-weight: 500; margin: 15px 0 10px; font-size: 22px; }
@@ -148,9 +143,6 @@ h1 em { font-weight: 400; color: #55714a; }
 .fallback-orbit { position: absolute; width: 360px; height: 360px; border: 1px solid #90a37480; border-radius: 50%; z-index: -1; transform: translate(120px,100px); }
 .fallback-orbit::before { content: ''; position: absolute; inset: 35px; border: 1px solid #90a37466; border-radius: 50%; }
 .fallback-caption { font-size: 20px; font-style: italic; }
-.site-footer { margin-top: 50px; padding: 23px 0 28px; border-top: 1px solid var(--line); display: flex; align-items: baseline; justify-content: space-between; gap: 20px; color: #7e8673; font-size: 10px; line-height: 1.7; }
-.site-footer > span { white-space: nowrap; color: #68765b; }
-.site-footer p { max-width: 520px; text-align: right; }
 .dialog-open { overflow: hidden; }
 .detail-dialog { border: 1px solid #dce1d1; padding: 0; border-radius: 22px; max-width: 680px; width: calc(100% - 32px); max-height: calc(100dvh - 48px); background: #fffef9; color: #253c30; overscroll-behavior: contain; box-shadow: 0 30px 90px #14291940; }
 .detail-dialog::backdrop { background: #182e2477; backdrop-filter: blur(4px); }
@@ -167,7 +159,7 @@ h1 em { font-weight: 400; color: #55714a; }
 .detail-facts dd { margin: 0; color: #6b7463; }
 .detail-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; margin-top: 23px; }
 .text-link { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; text-underline-offset: 4px; }
-.decision-progress { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; font-size: 12px; color: #5d7051; }
+.decision-progress { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; color: #5d7051; }
 .decision-progress strong { color: var(--green); font-size: 16px; font-variant-numeric: tabular-nums; }
 .progress-slots { display: flex; gap: 6px; }
 .progress-slots > span { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid #ccd8bd; background: #eef2e5; border-radius: 50%; color: #627155; font-size: 10px; transition: background-color .2s, color .2s; }
@@ -270,8 +262,7 @@ h1 em { font-weight: 400; color: #55714a; }
   .location-actions { flex-direction: row; flex-wrap: wrap; gap: 12px 22px; }
   .location-actions .text-button { min-height: 40px; }
   .search-submit { min-height: 48px; font-size: 13px; }
-  .sidebar-note { display: none; }
-  .results-toolbar { align-items: center; margin-bottom: 16px; }
+  .results-toolbar { align-items: center; }
   .result-summary h2 { font-size: 15px; }
   .welcome-card { height: 440px; min-height: 0; }
   .welcome-content { padding: 30px; }
@@ -280,8 +271,6 @@ h1 em { font-weight: 400; color: #55714a; }
   .activity-image { height: 285px; }
   .card-content { padding: 25px; }
   .card-content h3 { font-size: 29px; }
-  .site-footer { margin-top: 32px; flex-direction: column; gap: 6px; padding: 20px 0 25px; }
-  .site-footer p { text-align: left; }
   .detail-content { padding: 25px; }
   .detail-content h2 { font-size: 29px; }
   .detail-facts > div { grid-template-columns: 125px minmax(0, 1fr); gap: 10px; }
@@ -317,7 +306,6 @@ h1 em { font-weight: 400; color: #55714a; }
   .card-content h3 { font-size: 27px; }
   .card-description { font-size: 12px; }
   .card-more { min-height: 45px; }
-  .results-footnote { font-size: 9px; }
   .detail-dialog { width: calc(100% - 20px); max-height: calc(100dvh - 24px); border-radius: 17px; }
   .detail-content { padding: 23px; }
   .detail-dialog .activity-image { height: 195px; }

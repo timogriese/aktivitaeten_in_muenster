@@ -119,21 +119,20 @@ onBeforeUnmount(() => { ++searchVersion })
     <main id="main-content">
       <h1 id="page-title" class="sr-only">MünsterMatch</h1>
       <div class="workspace">
-        <aside class="search-sidebar" aria-label="Aktivitäten suchen">
-          <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
-          <div class="sidebar-note"><AppIcon name="leaf" :size="21" /><p>Manchmal ist die nächste<br>Auszeit gleich um die Ecke.</p></div>
-        </aside>
-        <section class="results-section" :class="{ 'results-section--with-selection': selected }" :aria-labelledby="searched ? 'results-heading' : undefined" :aria-label="searched ? undefined : 'Entdecken'" :aria-busy="loading">
-          <div v-if="searched" class="results-toolbar">
-            <div class="result-summary"><h2 id="results-heading">{{ resultHeading }}</h2><span>{{ roundComplete ? shortlist.length : activities.length }} {{ (roundComplete ? shortlist.length : activities.length) === 1 ? 'Aktivität' : 'Aktivitäten' }}</span></div>
-          </div>
-          <div class="sr-only" role="status" aria-atomic="true">{{ announcement }}</div>
-          <p v-if="searchError" class="result-error" role="alert">{{ searchError }}</p>
-          <div v-if="searched && !activities.length" class="empty-result" role="status"><AppIcon name="discover" :size="28" /><h3>Gerade keine Aktivitäten gefunden</h3><p>Ändere deine Suchangaben und suche erneut.</p></div>
-          <div v-if="searched && activities.length && !roundComplete" class="decision-progress">
+        <div v-if="searched" class="results-toolbar">
+          <div class="result-summary"><h2 id="results-heading">{{ resultHeading }}</h2><span>{{ roundComplete ? shortlist.length : activities.length }} {{ (roundComplete ? shortlist.length : activities.length) === 1 ? 'Aktivität' : 'Aktivitäten' }}</span></div>
+          <div v-if="activities.length && !roundComplete" class="decision-progress">
             <span><strong>{{ likedIds.length }}</strong> von 3 gefunden</span>
             <div class="progress-slots" aria-hidden="true"><span v-for="index in 3" :key="index" :class="{ filled: index <= likedIds.length }"><AppIcon v-if="index <= likedIds.length" name="check" :size="14" /><span v-else>{{ index }}</span></span></div>
           </div>
+        </div>
+        <aside class="search-sidebar" aria-label="Aktivitäten suchen">
+          <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
+        </aside>
+        <section class="results-section" :class="{ 'results-section--with-selection': selected }" :aria-labelledby="searched ? 'results-heading' : undefined" :aria-label="searched ? undefined : 'Entdecken'" :aria-busy="loading">
+          <div class="sr-only" role="status" aria-atomic="true">{{ announcement }}</div>
+          <p v-if="searchError" class="result-error" role="alert">{{ searchError }}</p>
+          <div v-if="searched && !activities.length" class="empty-result" role="status"><AppIcon name="discover" :size="28" /><h3>Gerade keine Aktivitäten gefunden</h3><p>Ändere deine Suchangaben und suche erneut.</p></div>
           <div class="discover-view">
             <div v-if="chosen" class="chosen-result">
               <div class="chosen-heading"><span class="chosen-check" aria-hidden="true"><AppIcon name="check" :size="24" /></span><div><p class="eyebrow">Weniger überlegen. Los geht’s.</p><h3 ref="chosenHeading" tabindex="-1">Deine Auszeit steht fest.</h3></div></div>
@@ -163,11 +162,9 @@ onBeforeUnmount(() => { ++searchVersion })
               <div class="welcome-content"><span class="welcome-label"><AppIcon name="pin" :size="15" />MÜNSTER, DEINE STADT</span><h3>Mal kurz<br><em>rauskommen.</em></h3><p>Was klingt nach deiner Auszeit?<br>Finde drei Ideen und wähle deinen Favoriten.</p><span class="welcome-footnote"><span></span>Natur, Kultur und kleine Abenteuer</span></div>
             </div>
           </div>
-          <p class="results-footnote"><span class="tiny-star" aria-hidden="true">✳</span>Dein nächster Lieblingsmoment könnte ganz nah sein.</p>
         </section>
       </div>
     </main>
-    <footer class="site-footer"><span>Mit Neugier durch Münster.</span></footer>
     <ActivityDetails ref="details" :activity="detailActivity" />
   </div>
 </template>
