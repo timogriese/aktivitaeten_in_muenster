@@ -7,7 +7,8 @@ _ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Settings(BaseSettings):
-    backend_url: str = "http://localhost:8001"
+    # Spring Boot backend (backend/). The Python mock_backend runs on 8001 instead.
+    backend_url: str = "http://localhost:8080"
     crawl_interval_minutes: int = 30
 
     # Tavily (search + page content in one call). Free tier: 1000 credits/month.

@@ -13,7 +13,11 @@ import com.graphhopper.util.PMap;
 import de.muenster.aktivitaeten.activity.Activity;
 import de.muenster.aktivitaeten.activity.ActivityRepository;
 import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Files;
@@ -26,6 +30,8 @@ import java.util.List;
 
 @Service
 public class WalkingRouterService {
+    private static final Logger log = LoggerFactory.getLogger(WalkingRouterService.class);
+
     private final String osmFile;
     private final String graphDirectory;
     private final ActivityRepository activityRepository;
@@ -53,9 +59,11 @@ public class WalkingRouterService {
         }
 
         Weighting weighting = graph.createWeighting(graph.getProfile("foot"), new PMap());
+        // No setWeightLimit: DijkstraOneToMany reuses its search across targets, and once one
+        // search stops at the limit every later target comes back "not found", even nearby ones.
+        // The time limit is applied to the path time below instead.
         DijkstraOneToMany dijkstra = new DijkstraOneToMany(
                 graph.getBaseGraph(), weighting, TraversalMode.NODE_BASED);
-        dijkstra.setWeightLimit(maximumSeconds);
         int originNode = originSnap.getClosestNode();
 
         for (Activity activity : activities) {
@@ -74,6 +82,9 @@ public class WalkingRouterService {
             }
 
             double seconds = path.getTime() / 1000.0;
+            if (seconds > maximumSeconds) {
+                continue;
+            }
             results.add(new WalkingRouteResponse.Result(activity.getId(), seconds));
         }
         results.sort(Comparator.comparingDouble(WalkingRouteResponse.Result::durationSeconds));
@@ -91,14 +102,36 @@ public class WalkingRouterService {
             return hopper;
         }
         Path osmPath = resolveResource(osmFile, "muenster-regbez-260924.osm.pbf");
-        hopper = new GraphHopper()
+        GraphHopper loaded = new GraphHopper()
                 .setOSMFile(osmPath.toString())
                 .setGraphHopperLocation(graphDirectory)
                 .setEncodedValuesString("foot_average_speed")
                 .setProfiles(new Profile("foot").setCustomModel(new CustomModel()
                         .addToSpeed(Statement.If("true", Statement.Op.LIMIT, "foot_average_speed"))));
-        hopper.importOrLoad();
+        loaded.importOrLoad();
+        hopper = loaded;
         return hopper;
+    }
+
+    // The first import of the OSM extract takes a while; do it in the background at startup so
+    // the first request doesn't hit that. Requests block on the monitor until it's done.
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmUpInBackground() {
+        Thread warmUp = new Thread(() -> {
+            try {
+                loadGraph();
+                log.info("Walking graph ready");
+            } catch (RuntimeException exception) {
+                log.warn("Walking graph could not be loaded - routing endpoints will fail: {}",
+                        exception.getMessage());
+            }
+        }, "routing-warm-up");
+        warmUp.setDaemon(true);
+        warmUp.start();
+    }
+
+    private synchronized void loadGraph() {
+        graph();
     }
 
     private Path resolveResource(String location, String resourceName) {

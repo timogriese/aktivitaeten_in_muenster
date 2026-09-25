@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 from .models import Activity, ActivityCreate, ActivityUpdate
@@ -35,7 +35,7 @@ class ActivityStore:
         if existing is None:
             return self.create(data), True
 
-        updated = existing.model_copy(update={**data.model_dump(), "updated_at": datetime.utcnow()})
+        updated = existing.model_copy(update={**data.model_dump(), "updated_at": datetime.now(UTC)})
         self._activities[existing.id] = updated
         return updated, False
 
@@ -44,7 +44,7 @@ class ActivityStore:
         if existing is None:
             return None
         updated = existing.model_copy(
-            update={**data.model_dump(exclude_unset=True), "updated_at": datetime.utcnow()}
+            update={**data.model_dump(exclude_unset=True), "updated_at": datetime.now(UTC)}
         )
         self._activities[activity_id] = updated
         return updated

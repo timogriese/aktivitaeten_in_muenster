@@ -35,14 +35,22 @@ class CrawlService:
 
         created = sum(1 for _, is_new in pushed if is_new)
         updated = len(pushed) - created
+        rejected = len(found) - len(pushed)
         logger.info(
-            "Crawl finished: queries=%r found=%d created=%d updated=%d",
+            "Crawl finished: queries=%r found=%d created=%d updated=%d rejected=%d",
             queries,
             len(found),
             created,
             updated,
+            rejected,
         )
-        return {"queries": queries, "found": len(found), "created": created, "updated": updated}
+        return {
+            "queries": queries,
+            "found": len(found),
+            "created": created,
+            "updated": updated,
+            "rejected": rejected,
+        }
 
 
 crawl_service = CrawlService()
