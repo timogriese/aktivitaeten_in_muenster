@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { explore } from '~/data/explore'
+import { aaseeImage, explore } from '~/data/explore'
 import type { Activity, AddressSuggestion, ExploreRequest } from '~/types/explore'
 
 const origin = ref<AddressSuggestion | null>(null)
@@ -157,9 +157,12 @@ onBeforeUnmount(() => { ++searchVersion })
               <ActivityDecision :key="roundNumber" :activity="selected" :disabled="loading" @decide="decide" @details="openDetails(selected)" />
               <p class="swipe-hint">Nach links: nicht für mich. Nach rechts: spannend.<br>Oder entscheide mit den Buttons.</p>
             </template>
-            <div v-else-if="!searched" class="welcome-card">
-              <img src="/images/aasee.svg" alt="Illustration einer grünen Uferlandschaft mit Segelboot auf dem Aasee" class="welcome-landscape">
-              <div class="welcome-content"><span class="welcome-label"><AppIcon name="pin" :size="15" />MÜNSTER, DEINE STADT</span><h3>Mal kurz<br><em>rauskommen.</em></h3><p>Was klingt nach deiner Auszeit?<br>Finde drei Ideen und wähle deinen Favoriten.</p><span class="welcome-footnote"><span></span>Natur, Kultur und kleine Abenteuer</span></div>
+            <div v-else-if="!searched">
+              <div class="welcome-card">
+                <img :src="aaseeImage.imageUrl" :alt="aaseeImage.imageAlt" class="welcome-landscape">
+                <div class="welcome-content"><span class="welcome-label"><AppIcon name="pin" :size="15" />MÜNSTER, DEINE STADT</span><h3>Mal kurz<br><em>rauskommen.</em></h3><p>Was klingt nach deiner Auszeit?<br>Finde drei Ideen und wähle deinen Favoriten.</p><span class="welcome-footnote"><span></span>Natur, Kultur und kleine Abenteuer</span></div>
+              </div>
+              <p class="photo-credit">Foto: <a :href="aaseeImage.imageCredit.sourceUrl" target="_blank" rel="noopener noreferrer">{{ aaseeImage.imageCredit.author }}</a> · <a :href="aaseeImage.imageCredit.licenseUrl" target="_blank" rel="noopener noreferrer">{{ aaseeImage.imageCredit.license }}</a> · Ausschnitt</p>
             </div>
           </div>
         </section>

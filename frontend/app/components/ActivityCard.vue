@@ -8,7 +8,7 @@ const categoryIcon = computed(() => ({ 'Natur & draußen': 'leaf', 'Kunst & Kult
 <template>
   <article class="activity-card" :aria-label="activity.title">
     <div class="card-visual">
-      <ActivityImage :src="activity.imageUrl" :title="activity.title" />
+      <ActivityImage :src="activity.imageUrl" :title="activity.title" :alt="activity.imageAlt" :position="activity.imagePosition" :credit="activity.imageCredit" />
       <span class="image-location"><AppIcon name="pin" :size="15" /> Münster</span>
       <span v-if="activity.kind === 'event'" class="event-badge">Event</span>
     </div>
