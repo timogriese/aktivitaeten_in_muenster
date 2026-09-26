@@ -2,10 +2,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import type { ExploreRequest } from '~/types/explore'
 
-const { data: tagCatalog } = await useFetch<Record<string, string[]>>('/api/tags', {
-  default: () => ({}),
-})
-
 const props = defineProps<{ loading: boolean }>()
 const emit = defineEmits<{ search: [request: ExploreRequest] }>()
 const durationChoice = ref<number | 'custom' | null>(null)
@@ -21,20 +17,7 @@ const locating = ref(false)
 const formError = ref('')
 const errorField = ref('')
 const preferredTags = ref<string[]>([])
-const interestsOpen = ref(false)
-const interestSearch = ref('')
 const quickInterests = ['entspannt', 'sportlich', 'kreativ', 'kulturell', 'gesellig', 'draußen']
-const interestGroupNames = ['Charakter', 'Ort', 'Bewegung & Sport', 'Kultur & Kreatives', 'Spiel & Geselligkeit', 'Natur & Tiere', 'Essen & Trinken', 'Lernen']
-const interestQuery = computed(() => interestSearch.value.trim().toLocaleLowerCase('de'))
-const interestGroups = computed(() => Object.entries(tagCatalog.value)
-  .filter(([name]) => interestGroupNames.includes(name))
-  .map(([name, tags]) => ({
-    name,
-    tags: tags.filter(tag => interestLabel(tag).toLocaleLowerCase('de').includes(interestQuery.value)
-      || name.toLocaleLowerCase('de').includes(interestQuery.value)),
-    selectedCount: tags.filter(tag => preferredTags.value.includes(tag)).length,
-  }))
-  .filter(group => group.tags.length > 0))
 let locationVersion = 0
 
 function interestLabel(tag: string) {
@@ -137,24 +120,6 @@ onBeforeUnmount(() => { ++locationVersion })
         <button v-for="tag in quickInterests" :key="tag" type="button" class="interest-chip" :aria-pressed="preferredTags.includes(tag)" @click="toggleInterest(tag)">
           {{ interestLabel(tag) }}<span v-if="preferredTags.includes(tag)" aria-hidden="true">✓</span>
         </button>
-      </div>
-      <button type="button" class="interest-toggle" :aria-expanded="interestsOpen" aria-controls="interest-catalog" @click="interestsOpen = !interestsOpen">
-        Weitere Interessen auswählen <span aria-hidden="true">{{ interestsOpen ? '−' : '+' }}</span>
-      </button>
-      <div v-show="interestsOpen" id="interest-catalog" class="interest-catalog">
-        <label class="interest-search">
-          <span>Interessen suchen</span>
-          <input v-model="interestSearch" type="search" @keydown.enter.prevent>
-        </label>
-        <details v-for="group in interestGroups" :key="group.name" class="interest-group" :open="interestQuery.length > 0">
-          <summary>{{ group.name }}<span v-if="group.selectedCount" class="interest-count">{{ group.selectedCount }}<span class="sr-only"> ausgewählt</span></span></summary>
-          <div class="interest-chips">
-            <button v-for="tag in group.tags" :key="tag" type="button" class="interest-chip" :aria-pressed="preferredTags.includes(tag)" @click="toggleInterest(tag)">
-              {{ interestLabel(tag) }}<span v-if="preferredTags.includes(tag)" aria-hidden="true">✓</span>
-            </button>
-          </div>
-        </details>
-        <p v-if="!interestGroups.length" class="interest-empty" role="status">Keine Interessen gefunden.</p>
       </div>
       <div v-if="preferredTags.length" class="selected-interests">
         <p>Ausgewählt:</p>
