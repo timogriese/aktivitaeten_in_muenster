@@ -4,7 +4,7 @@
 		{
 			"label": "Download Geodata",
 			"type": "shell",
-			"command": "mkdir -p backend/data && curl -L --fail --output backend/data/muenster-regbez-260924.osm.pbf https://download.geofabrik.de/europe/germany/nordrhein-westfalen/muenster-regbez-latest.osm.pbf",
+			"command": "mkdir -p backend/data && curl -L --fail --output backend/data/muenster-regbez.osm.pbf https://download.geofabrik.de/europe/germany/nordrhein-westfalen/muenster-regbez-latest.osm.pbf",
 			"options": {
 				"cwd": "${workspaceFolder}"
 			},

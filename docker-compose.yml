@@ -1,0 +1,55 @@
+name: aktivitaeten-in-muenster
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      # Used by the Nuxt/Nitro routeRules proxy for server-side /api/** calls.
+      BACKEND_URL: http://backend:8080
+    expose:
+      - "3000"
+    networks:
+      - app
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_PATH: /data/activities.db
+      ROUTING_OSM_FILE: /data/osm/muenster-regbez.osm.pbf
+      ROUTING_GRAPH_DIRECTORY: /data/graph
+    volumes:
+      # Shared SQLite database at the repo root.
+      - ./activities.db:/data/activities.db
+      # OSM extract (backend/data/muenster-regbez.osm.pbf), see backend/README.md.
+      - ./backend/data:/data/os>m:ro
+      # GraphHopper graph cache, imported once and reused.
+      - routing-graph:/data/graph
+    expose:
+      - "8080"
+    networks:
+      - app
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app
+    restart: unless-stopped
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  routing-graph:

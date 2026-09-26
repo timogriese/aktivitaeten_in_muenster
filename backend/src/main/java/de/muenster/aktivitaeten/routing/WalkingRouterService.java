@@ -42,7 +42,7 @@ public class WalkingRouterService {
     private GraphHopper hopper;
 
     public WalkingRouterService(
-            @Value("${routing.osm-file:classpath:muenster-regbez-260924.osm.pbf}") String osmFile,
+            @Value("${routing.osm-file:classpath:muenster-regbez.osm.pbf}") String osmFile,
             @Value("${routing.graph-directory:${java.io.tmpdir}/aktivitaeten-graph}") String graphDirectory,
             ActivityRepository activityRepository) {
         this.osmFile = osmFile;
