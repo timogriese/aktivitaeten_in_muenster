@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="390" viewBox="0 0 39 39" fill="none" role="img" aria-labelledby="logo-title">
+  <title id="logo-title">MünsterMatch – Standortmarkierung mit Herz</title>
+  <rect width="39" height="39" rx="13" fill="#254F3C" />
+  <svg x="5.5" y="5.5" width="28" height="28" viewBox="0 0 32 32" fill="none">
+    <path d="M26 12c0 7-10 16-10 16S6 19 6 12a10 10 0 0 1 20 0Z" stroke="#E9EDCD" stroke-width="1.8" stroke-linejoin="round" />
+    <path d="M16 18s-6-3.7-6-7.2a3.3 3.3 0 0 1 6-1.8 3.3 3.3 0 0 1 6 1.8C22 14.3 16 18 16 18Z" fill="#E9EDCD" />
+  </svg>
+</svg>
