@@ -267,6 +267,7 @@ h1 em { font-weight: 400; color: #55714a; }
 }
 @media (max-width: 760px) {
   .welcome-view { display: none; }
+  .shortlist-grid { padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
   .round-completion { padding: 24px 16px; }
   .app-shell { padding: 0 22px; }
   .site-header { min-height: 64px; padding-block: 10px; }
