@@ -7,6 +7,7 @@ export interface ExploreRequest {
   origin: Coordinates
   startsAt: string
   availableMinutes: number
+  preferredTags?: string[]
 }
 
 export interface Activity {

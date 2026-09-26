@@ -6,12 +6,14 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /** Mirrors the frontend's ExploreRequest (frontend/app/types/explore.ts). */
 public record ExploreRequest(
         @NotNull @Valid Origin origin,
         @NotNull OffsetDateTime startsAt,
-        @NotNull @Positive Integer availableMinutes) {
+        @NotNull @Positive Integer availableMinutes,
+        List<String> preferredTags) {
 
     public record Origin(
             @NotNull @DecimalMin("-90.0") @DecimalMax("90.0") Double lat,
