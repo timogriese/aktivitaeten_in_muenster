@@ -128,7 +128,7 @@ h1 em { font-weight: 400; color: #55714a; }
 .category[data-category='sport'] { color: #3e7e89; }
 .category[data-category='music'] { color: #826387; }
 .card-content h3 { font-size: clamp(24px, 2.3vw, 32px); font-weight: 500; letter-spacing: -1px; line-height: 1.2; margin-top: 10px; }
-.card-description { color: #6d7466; font-size: 13px; line-height: 1.8; margin-top: 12px; max-width: 560px; }
+.card-description { color: #6d7466; font-size: 15px; line-height: 1.8; margin-top: 12px; max-width: 560px; }
 .card-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 21px; }
 .card-more, .card-travel { flex: 1 1 0; min-width: 0; }
 .card-travel { text-decoration: none; }
@@ -157,7 +157,7 @@ h1 em { font-weight: 400; color: #55714a; }
 .dialog-close { position: absolute; z-index: 2; top: 15px; right: 15px; }
 .detail-content { padding: 30px 34px 34px; }
 .detail-content h2 { margin: 10px 0 17px; font-size: 34px; font-weight: 500; line-height: 1.2; letter-spacing: -1px; }
-.detail-content > p { font-size: 14px; line-height: 1.9; color: #66705e; white-space: pre-line; }
+.detail-content > p { font-size: 16px; line-height: 1.9; color: #66705e; white-space: pre-line; }
 .detail-facts { margin: 24px 0; }
 .detail-facts > div { display: grid; grid-template-columns: 155px 1fr; gap: 14px; padding: 13px 0; border-top: 1px solid var(--line); font-size: 12px; line-height: 1.7; }
 .detail-facts dt { display: flex; align-items: center; gap: 8px; font-weight: 600; }
@@ -218,11 +218,11 @@ h1 em { font-weight: 400; color: #55714a; }
 .shortlist-grid .card-content { padding: 18px 15px; display: flex; flex-direction: column; align-items: flex-start; flex: 1; }
 .shortlist-grid .category { font-size: 8px; letter-spacing: .5px; }
 .shortlist-grid h3 { font-size: 23px; line-height: 1.2; letter-spacing: -.6px; }
-.shortlist-grid .card-description { font-size: 12px; line-height: 1.7; }
+.shortlist-grid .card-description { font-size: 14px; line-height: 1.7; }
 .shortlist-grid .image-location { top: 10px; left: 10px; padding: 5px 7px; font-size: 9px; }
 .shortlist-grid .event-badge { top: 42px; left: 10px; right: auto; padding: 5px 7px; font-size: 9px; }
 .shortlist-grid .timing-info { font-size: 10px; }
-.shortlist-grid .card-actions { flex-direction: column; width: 100%; margin-top: 10px; }
+.shortlist-grid .card-actions { width: 100%; margin-top: auto; padding-top: 10px; }
 .shortlist-address { display: flex; align-items: flex-start; gap: 6px; margin: 12px 0 0; font-size: 10px; line-height: 1.6; color: #626e59; }
 .chosen-heading { display: flex; align-items: center; gap: 15px; padding: 19px; background: #eaf0dd; border: 1px solid #d4dfc3; border-radius: 14px; margin-bottom: 20px; }
 .chosen-heading h3 { font-size: 24px; font-weight: 500; letter-spacing: -.7px; line-height: 1.2; margin-top: 7px; }
@@ -234,6 +234,11 @@ h1 em { font-weight: 400; color: #55714a; }
 @keyframes success-burst { 0% { opacity: 0; transform: rotate(var(--angle)) translateY(-28px) scale(.5); } 20% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--angle)) translateY(-80px) rotate(60deg) scale(.8); } }
 @keyframes shortlist-arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
+@media (min-width: 761px) {
+  .shortlist-grid .card-actions { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 8px; }
+  .shortlist-grid .card-actions .primary-button { gap: 5px; padding: 10px 8px; font-size: 11px; }
+  .shortlist-grid .card-actions > .activity-share { grid-column: 1 / -1; }
+}
 @media (min-width: 1400px) {
   .workspace { grid-template-columns: 335px minmax(0, 1fr); gap: 42px; }
   .search-form { padding: 29px; }
@@ -291,7 +296,7 @@ h1 em { font-weight: 400; color: #55714a; }
   .activity-decision .activity-image { height: clamp(120px, 22svh, 180px); }
   .activity-decision .card-content { padding: 14px 16px; }
   .activity-decision .card-content h3 { margin-top: 6px; font-size: 23px; }
-  .activity-decision .card-description { margin-top: 8px; font-size: 12px; line-height: 1.5; }
+  .activity-decision .card-description { margin-top: 8px; font-size: 14px; line-height: 1.5; }
   .activity-decision .timing-info { margin-top: 10px; gap: 5px 12px; }
   .activity-decision .card-actions { margin-top: 12px; }
   .decision-actions { padding-top: 12px; gap: 32px; }
@@ -330,14 +335,14 @@ h1 em { font-weight: 400; color: #55714a; }
   .activity-image { height: 230px; }
   .card-content { padding: 22px; }
   .card-content h3 { font-size: 27px; }
-  .card-description { font-size: 12px; }
+  .card-description { font-size: 14px; }
   .card-more, .card-travel { min-height: 45px; }
   .detail-dialog { width: calc(100% - 20px); max-height: calc(100dvh - 24px); border-radius: 17px; }
   .detail-content { padding: 23px; }
   .detail-dialog .activity-image { height: 195px; }
   .detail-content h2 { font-size: 27px; }
   .detail-facts > div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
-  .detail-content > p { font-size: 13px; }
+  .detail-content > p { font-size: 15px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

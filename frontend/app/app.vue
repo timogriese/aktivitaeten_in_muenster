@@ -139,7 +139,7 @@ onBeforeUnmount(() => { ++searchVersion })
         </div>
         <aside class="search-sidebar" :class="{ 'search-sidebar--collapsed': !mobileSettingsOpen }" aria-label="Aktivitäten suchen">
           <button ref="settingsToggle" class="settings-toggle" type="button" :aria-expanded="mobileSettingsOpen" aria-controls="search-settings" @click="mobileSettingsOpen = !mobileSettingsOpen">
-            Einstellungen
+            {{ mobileSettingsOpen ? 'Einstellungen' : 'Neustart' }}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
           </button>
           <div id="search-settings" ref="settingsPanel" class="search-settings">
