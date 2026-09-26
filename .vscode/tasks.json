@@ -1,0 +1,20 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Download Geodata",
+			"type": "shell",
+			"command": "mkdir -p backend/data && curl -L --fail --output backend/data/muenster-regbez-260924.osm.pbf https://download.geofabrik.de/europe/germany/nordrhein-westfalen/muenster-regbez-latest.osm.pbf",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [],
+			"group": "build",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"detail": "Downloads the Muenster OSM extract used for walking routes to backend/data/muenster-regbez-260924.osm.pbf (133 MB)."
+		}
+	]
+}

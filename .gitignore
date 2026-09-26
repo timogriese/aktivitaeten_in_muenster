@@ -22,7 +22,6 @@ backend/data/
 backend/src/main/resources/*.pbf
 
 # Editor
-.vscode/
 .idea/
 
 # Claude Code personal settings (never shared/committed)
