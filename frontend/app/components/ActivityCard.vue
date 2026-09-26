@@ -21,12 +21,12 @@ const categoryIcon = computed(() => ({ 'Natur & draußen': 'leaf', 'Kunst & Kult
         <span v-if="activity.timingLabel"><AppIcon name="clock" :size="16" />{{ activity.timingLabel }}</span>
         <span v-if="activity.travelTimeMinutes != null"><AppIcon name="arrow" :size="16" />{{ activity.travelTimeMinutes }} Min. Anreise</span>
       </div>
+      <slot name="actions" />
       <div class="card-actions">
         <button class="primary-button card-more" type="button" @click="$emit('details')">Mehr erfahren <AppIcon name="arrow" :size="18" /></button>
         <a v-if="activity.mapsUrl" class="primary-button card-travel" :href="activity.mapsUrl" :aria-label="`Routenplanung für ${activity.title} in Google Maps`" target="_blank" rel="noopener noreferrer">Reise<AppIcon name="navigate" :size="18" /><span class="sr-only"> (neuer Tab)</span></a>
         <ActivityShare :key="activity.id" :activity="activity" />
       </div>
-      <slot name="actions" />
     </div>
   </article>
 </template>
