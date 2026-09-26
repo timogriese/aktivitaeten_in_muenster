@@ -8,7 +8,11 @@ Monorepo-Struktur:
 - [`crawler/`](crawler/README.md) — Web-Crawling + KI-Extraktion, befüllt das Backend über dessen API
 - `frontend/` — Nuxt-Web-App, spricht per Dev-Proxy mit dem Backend
 
-## Lokal starten
+## Lokal starten mit docker compose
+
+docker compose up --build
+
+## Lokal starten mit lokalen dependencies
 
 Voraussetzungen: Java 17+, Maven, uv, Node.js, make. Einmalig die OSM-Datei fürs
 Routing laden (siehe [`backend/README.md`](backend/README.md)) und
