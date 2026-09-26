@@ -270,7 +270,8 @@ h1 em { font-weight: 400; color: #55714a; }
   .welcome-view { display: none; }
   .round-completion { padding: 24px 16px; }
   .app-shell { padding: 0 22px; }
-  .site-header { min-height: 83px; }
+  .site-header { min-height: 64px; padding-block: 10px; }
+  .workspace { margin-top: 16px; gap: 14px; }
   .brand { font-size: 27px; gap: 8px; }
   .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
   .intro { display: none; }
@@ -293,6 +294,16 @@ h1 em { font-weight: 400; color: #55714a; }
   .card-actions > .activity-share { min-width: 0; }
   .card-actions .primary-button, .card-actions .share-button { gap: 5px; padding: 10px 8px; font-size: 11px; }
   .card-content h3 { font-size: 29px; }
+  .activity-decision .activity-image { height: clamp(120px, 22svh, 180px); }
+  .activity-decision .card-content { padding: 14px 16px; }
+  .activity-decision .card-content h3 { margin-top: 6px; font-size: 23px; }
+  .activity-decision .card-description { margin-top: 8px; font-size: 12px; line-height: 1.5; }
+  .activity-decision .timing-info { margin-top: 10px; gap: 5px 12px; }
+  .activity-decision .card-actions { margin-top: 12px; }
+  .decision-actions { padding-top: 12px; gap: 32px; }
+  .decision-option { gap: 5px; }
+  .decision-button { width: 60px; height: 60px; }
+  .swipe-hint { margin-top: 8px; line-height: 1.5; }
   .detail-content { padding: 25px; }
   .detail-content h2 { font-size: 29px; }
   .detail-facts > div { grid-template-columns: 125px minmax(0, 1fr); gap: 10px; }
