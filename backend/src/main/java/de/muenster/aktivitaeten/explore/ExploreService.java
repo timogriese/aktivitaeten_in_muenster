@@ -1,12 +1,14 @@
 package de.muenster.aktivitaeten.explore;
 
 import de.muenster.aktivitaeten.activity.Activity;
+import de.muenster.aktivitaeten.activity.ActivityImages;
 import de.muenster.aktivitaeten.activity.OpeningHours;
 import de.muenster.aktivitaeten.activity.ActivityRepository;
 import de.muenster.aktivitaeten.activity.TagCatalog;
 import de.muenster.aktivitaeten.activity.Location;
 import de.muenster.aktivitaeten.explore.ExploreResponse.Coordinates;
 import de.muenster.aktivitaeten.explore.ExploreResponse.ExploreActivity;
+import de.muenster.aktivitaeten.explore.ExploreResponse.ImageCredit;
 import de.muenster.aktivitaeten.routing.Coordinate;
 import de.muenster.aktivitaeten.routing.WalkingRouteRequest;
 import de.muenster.aktivitaeten.routing.WalkingRouteResponse;
@@ -14,6 +16,7 @@ import de.muenster.aktivitaeten.routing.WalkingRouterService;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -57,14 +60,20 @@ public class ExploreService {
     private final ActivityRepository activityRepository;
     private final WalkingRouterService walkingRouterService;
     private final TagCatalog tagCatalog;
+    private final ActivityImages activityImages;
 
     public ExploreService(ActivityRepository activityRepository, WalkingRouterService walkingRouterService,
-                          TagCatalog tagCatalog) {
+                          TagCatalog tagCatalog, ActivityImages activityImages) {
         this.activityRepository = activityRepository;
         this.walkingRouterService = walkingRouterService;
         this.tagCatalog = tagCatalog;
+        this.activityImages = activityImages;
     }
 
+    // Read-only so activity.getTags() (lazy-loaded, needed for the image lookup below) can still
+    // be read on the plain findAll() path - open-in-view is off, so without a transaction the
+    // Hibernate session is already gone by the time toResponse() runs.
+    @Transactional(readOnly = true)
     public ExploreResponse explore(ExploreRequest request) {
         Set<String> preferredTags = Set.copyOf(tagCatalog.clean(
                 request.preferredTags() == null ? List.of() : request.preferredTags()));
@@ -114,6 +123,7 @@ public class ExploreService {
                 .toList());
     }
 
+    @Transactional(readOnly = true)
     public ExploreActivity getActivity(String id) {
         Activity activity = activityRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
@@ -174,6 +184,8 @@ public class ExploreService {
                                        String timingLabel) {
         OpeningHours hours = activity.getOpeningHours();
         boolean event = hours.getDate() != null;
+        ActivityImages.ImageRef image = activityImages.imageFor(activity);
+
         return new ExploreActivity(
                 activity.getId(),
                 activity.getTitle(),
@@ -190,7 +202,9 @@ public class ExploreService {
                         ? CLOCK.format(hours.getStart()) + "–" + CLOCK.format(hours.getEnd()) + " Uhr"
                         : CLOCK.format(window.open()) + "–" + CLOCK.format(window.close()) + " Uhr"),
                 travelTimeMinutes,
-                timingLabel);
+                timingLabel,
+                image == null ? null : image.url(),
+                image == null ? null : new ImageCredit(image.author(), image.sourceUrl(), image.license(), image.licenseUrl()));
     }
 
     private static String mapsUrl(Location location) {

@@ -1,0 +1,146 @@
+{
+  "_comment": "License-free stock photos (openverse.org) for the activity images. 'tags': 3 images per tag so activities sharing a tag don't all show the same photo - the backend (ActivityImages) picks one by hashing the activity id. 'categories': one fallback image per crawler category (Activity.category), used when none of an activity's tags have images. 'default': last-resort fallback. license cc0/pdm need no attribution; by/by-sa/by-nd do if the image is shown - keep 'author'/'licenseUrl' around for that.",
+  "tags": {
+    "sportlich": [
+      { "url": "https://live.staticflickr.com/5110/5664786032_5fa61fc254_b.jpg", "author": "U.S. Army Europe", "sourceUrl": "https://www.flickr.com/photos/37585279@N03/5664786032", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+      { "url": "https://live.staticflickr.com/6164/6206013520_4ae02c9413_b.jpg", "author": "USAG-Humphreys", "sourceUrl": "https://www.flickr.com/photos/31687107@N07/6206013520", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/3503/4019877184_981fe8b756_b.jpg", "author": "marlon.net", "sourceUrl": "https://www.flickr.com/photos/31569814@N08/4019877184", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "entspannt": [
+      { "url": "https://live.staticflickr.com/2854/34006151095_d625025be8_b.jpg", "author": "Rawpixel Ltd", "sourceUrl": "https://www.flickr.com/photos/147875007@N03/34006151095", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+      { "url": "https://live.staticflickr.com/7520/29987822996_8e30e1b382_b.jpg", "author": "freestocks.org", "sourceUrl": "https://www.flickr.com/photos/135396164@N05/29987822996", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+      { "url": "https://live.staticflickr.com/933/29058399567_394965edf3_b.jpg", "author": "Artem Beliaikin", "sourceUrl": "https://www.flickr.com/photos/157635012@N07/29058399567", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" }
+    ],
+    "kreativ": [
+      { "url": "https://live.staticflickr.com/8339/8241985811_5afa7cc735_b.jpg", "author": "vancouverfilmschool", "sourceUrl": "https://www.flickr.com/photos/38174668@N05/8241985811", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/8484/8243056462_6efc48b58e_b.jpg", "author": "vancouverfilmschool", "sourceUrl": "https://www.flickr.com/photos/38174668@N05/8243056462", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/8486/8243052342_7f7394d990_b.jpg", "author": "vancouverfilmschool", "sourceUrl": "https://www.flickr.com/photos/38174668@N05/8243052342", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "kulturell": [
+      { "url": "https://live.staticflickr.com/65535/51679222362_2f71ba718d_b.jpg", "author": "Onasill - Bill Badzo", "sourceUrl": "https://www.flickr.com/photos/7156765@N05/51679222362", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+      { "url": "https://live.staticflickr.com/65535/51538131487_6cb73ac348_b.jpg", "author": "Onasill - Bill Badzo", "sourceUrl": "https://www.flickr.com/photos/7156765@N05/51538131487", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+      { "url": "https://live.staticflickr.com/65535/51674005499_542e3ff91f_b.jpg", "author": "Onasill - Bill Badzo", "sourceUrl": "https://www.flickr.com/photos/7156765@N05/51674005499", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" }
+    ],
+    "gesellig": [
+      { "url": "https://live.staticflickr.com/5538/11309463946_fd94f3dee4_b.jpg", "author": "noeljordan", "sourceUrl": "https://www.flickr.com/photos/89209149@N02/11309463946", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/2813/11309377263_e66ea88aaa_b.jpg", "author": "noeljordan", "sourceUrl": "https://www.flickr.com/photos/89209149@N02/11309377263", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/5204/5351218730_e2cd251623_b.jpg", "author": "barry.pousman", "sourceUrl": "https://www.flickr.com/photos/27202949@N00/5351218730", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "musikalisch": [
+      { "url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvZmlsZXMvd2Vic2l0ZS8yMDI0LTAyL3dja3ZiM2hhNTgtaW1hZ2UuanBn.jpg", "author": "rawpixel", "sourceUrl": "https://www.rawpixel.com/image/13991626/uncatalogued", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+      { "url": "https://live.staticflickr.com/2779/4385871127_c5bee8b71f_b.jpg", "author": "cogdogblog", "sourceUrl": "https://www.flickr.com/photos/37996646802@N01/4385871127", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+      { "url": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Women_musicians_playing_instruments_before_an_audience_of_me_Wellcome_V0040344.jpg", "author": "Wellcome Collection", "sourceUrl": "https://commons.wikimedia.org/w/index.php?curid=36638095", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "draußen": [
+      { "url": "https://live.staticflickr.com/7757/18412703721_9dcbce6b9f_b.jpg", "author": "Bernard Spragg", "sourceUrl": "https://www.flickr.com/photos/88123769@N02/18412703721", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+      { "url": "https://live.staticflickr.com/8775/28398997840_7577b415bf_b.jpg", "author": "Queensland State Archives", "sourceUrl": "https://www.flickr.com/photos/60455048@N02/28398997840", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+      { "url": "https://live.staticflickr.com/3929/33102246874_66221c4725_b.jpg", "author": "Lenny K Photography", "sourceUrl": "https://www.flickr.com/photos/57527070@N06/33102246874", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "drinnen": [
+      { "url": "https://live.staticflickr.com/171/465852851_a341bac227_b.jpg", "author": "Wonderlane", "sourceUrl": "https://www.flickr.com/photos/71401718@N00/465852851", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/4110/4847893891_6006fc3cf2_b.jpg", "author": "Wonderlane", "sourceUrl": "https://www.flickr.com/photos/71401718@N00/4847893891", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/2597/3858347477_b3db28eda8_b.jpg", "author": "toddwight1", "sourceUrl": "https://www.flickr.com/photos/35598032@N06/3858347477", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "familienfreundlich": [
+      { "url": "https://live.staticflickr.com/3882/14458297248_5a79d033a2_b.jpg", "author": "Scott 97006", "sourceUrl": "https://www.flickr.com/photos/29487672@N07/14458297248", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/8453/8036536107_637031bc51_b.jpg", "author": "EtanSivad", "sourceUrl": "https://www.flickr.com/photos/15333658@N00/8036536107", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/4085/5053031336_57b348cb08_b.jpg", "author": "Guilherme Jófili", "sourceUrl": "https://www.flickr.com/photos/87971644@N00/5053031336", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "yoga": [
+      { "url": "https://live.staticflickr.com/2763/4439499511_f2f95cec03_b.jpg", "author": "GoToVan", "sourceUrl": "https://www.flickr.com/photos/47022937@N03/4439499511", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/3183/5716950226_a470ee014f_b.jpg", "author": "Average Jane", "sourceUrl": "https://www.flickr.com/photos/64401168@N00/5716950226", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/4031/4439500017_b02879453a_b.jpg", "author": "GoToVan", "sourceUrl": "https://www.flickr.com/photos/47022937@N03/4439500017", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "klettern": [
+      { "url": "https://live.staticflickr.com/3172/2672602622_2d1dca2b7b_b.jpg", "author": "Rennett Stowe", "sourceUrl": "https://www.flickr.com/photos/10393601@N08/2672602622", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Adventure-of-the-Seas-6-rock-climbing-wall.JPG", "author": "George Hutchinson / Brian Burnell", "sourceUrl": "https://commons.wikimedia.org/w/index.php?curid=26164539", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/5589/14311414587_542167664a_b.jpg", "author": "Jonathan Rolande", "sourceUrl": "https://www.flickr.com/photos/110671496@N06/14311414587", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "wandern": [
+      { "url": "https://live.staticflickr.com/7423/9462531472_590794e860_b.jpg", "author": "cclogg", "sourceUrl": "https://www.flickr.com/photos/46244586@N02/9462531472", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+      { "url": "https://live.staticflickr.com/3413/3491439697_11cdd84b65_b.jpg", "author": "deborah.soltesz", "sourceUrl": "https://www.flickr.com/photos/10836653@N05/3491439697", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+      { "url": "https://live.staticflickr.com/3394/3491448415_150f276551_b.jpg", "author": "deborah.soltesz", "sourceUrl": "https://www.flickr.com/photos/10836653@N05/3491448415", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" }
+    ],
+    "tanzen": [
+      { "url": "https://live.staticflickr.com/3233/2959731397_0967175e84_b.jpg", "author": "Egil Fujikawa Nes", "sourceUrl": "https://www.flickr.com/photos/27242804@N04/2959731397", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/3311/3435226940_016ecab66a_b.jpg", "author": "jay8085", "sourceUrl": "https://www.flickr.com/photos/89649959@N00/3435226940", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/5221/5586384334_0cef85ba20_b.jpg", "author": "Dolbs", "sourceUrl": "https://www.flickr.com/photos/97127839@N00/5586384334", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "schwimmen": [
+      { "url": "https://live.staticflickr.com/4629/39375914205_8fe86d4a0d_b.jpg", "author": "marcostetter", "sourceUrl": "https://www.flickr.com/photos/149556095@N03/39375914205", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+      { "url": "https://live.staticflickr.com/1833/28840094527_02a6d9cebf_b.jpg", "author": "marcostetter", "sourceUrl": "https://www.flickr.com/photos/149556095@N03/28840094527", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+      { "url": "https://live.staticflickr.com/65535/48324648387_ff576435d7_b.jpg", "author": "marcostetter", "sourceUrl": "https://www.flickr.com/photos/149556095@N03/48324648387", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" }
+    ],
+    "radfahren": [
+      { "url": "https://live.staticflickr.com/8402/8926384711_c316775d23_b.jpg", "author": "Yukiko Matsuoka", "sourceUrl": "https://www.flickr.com/photos/92483809@N08/8926384711", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/3557/3504260878_e498e0742f_b.jpg", "author": "Wootang01", "sourceUrl": "https://www.flickr.com/photos/7310714@N06/3504260878", "license": "CC BY-ND", "licenseUrl": "https://creativecommons.org/licenses/by-nd/2.0/" },
+      { "url": "https://live.staticflickr.com/3416/3504276818_274856836b_b.jpg", "author": "Wootang01", "sourceUrl": "https://www.flickr.com/photos/7310714@N06/3504276818", "license": "CC BY-ND", "licenseUrl": "https://creativecommons.org/licenses/by-nd/2.0/" }
+    ],
+    "musik": [
+      { "url": "https://live.staticflickr.com/7440/9896274093_e72127b932_b.jpg", "author": "Gethen", "sourceUrl": "https://www.flickr.com/photos/12978395@N00/9896274093", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/3723/9896250863_2334fa7aa8_b.jpg", "author": "Gethen", "sourceUrl": "https://www.flickr.com/photos/12978395@N00/9896250863", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/3810/9896156994_5bd5f92b45_b.jpg", "author": "Gethen", "sourceUrl": "https://www.flickr.com/photos/12978395@N00/9896156994", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "museum": [
+      { "url": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Finnish_Aviation_Museum_exhibition_hall_1_20090419.jpg", "author": "Bergfalke2", "sourceUrl": "https://commons.wikimedia.org/w/index.php?curid=6599696", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/3937/15348933089_425a0d87c1_b.jpg", "author": "North Charleston", "sourceUrl": "https://www.flickr.com/photos/36686551@N06/15348933089", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/3953/15535565065_721814c8e7_b.jpg", "author": "North Charleston", "sourceUrl": "https://www.flickr.com/photos/36686551@N06/15535565065", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" }
+    ],
+    "kunst": [
+      { "url": "https://live.staticflickr.com/5662/21736701844_d1564e8b62_b.jpg", "author": "Art Gallery ErgsArt", "sourceUrl": "https://www.flickr.com/photos/95929490@N06/21736701844", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+      { "url": "https://live.staticflickr.com/623/22165284309_11062e471b_b.jpg", "author": "Art Gallery ErgsArt", "sourceUrl": "https://www.flickr.com/photos/95929490@N06/22165284309", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+      { "url": "https://live.staticflickr.com/657/22175015850_a153bf0cb3_b.jpg", "author": "Art Gallery ErgsArt", "sourceUrl": "https://www.flickr.com/photos/95929490@N06/22175015850", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" }
+    ],
+    "theater": [
+      { "url": "https://live.staticflickr.com/1022/1125019024_78380c1372_b.jpg", "author": "ToastyKen", "sourceUrl": "https://www.flickr.com/photos/24226200@N00/1125019024", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/8827/16493343534_d940a9a88c_b.jpg", "author": "jurvetson", "sourceUrl": "https://www.flickr.com/photos/44124348109@N01/16493343534", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/3416/3249057879_f1abaac48c_b.jpg", "author": "Mickey JT", "sourceUrl": "https://www.flickr.com/photos/21165017@N06/3249057879", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "spiele": [
+      { "url": "https://live.staticflickr.com/6171/6223207859_5e7eaa6e11_b.jpg", "author": "Dan Zen", "sourceUrl": "https://www.flickr.com/photos/16077535@N00/6223207859", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/7191/6888135847_a5af931f6f_b.jpg", "author": "eilonwy77", "sourceUrl": "https://www.flickr.com/photos/41322510@N00/6888135847", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/2778/4421257399_6416f1db69_b.jpg", "author": "gfairchild", "sourceUrl": "https://www.flickr.com/photos/36770908@N08/4421257399", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "party": [
+      { "url": "https://live.staticflickr.com/2850/11488079996_ab3452839e_b.jpg", "author": "Mixtribe Photo", "sourceUrl": "https://www.flickr.com/photos/24279287@N03/11488079996", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/2914/14313689306_64fbc3847f_b.jpg", "author": "be creator", "sourceUrl": "https://www.flickr.com/photos/119678691@N02/14313689306", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/8242/8619680990_0fa1cd43c2_b.jpg", "author": "Krista Baltroka", "sourceUrl": "https://www.flickr.com/photos/91337702@N08/8619680990", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "natur": [
+      { "url": "https://live.staticflickr.com/8361/29354491425_27edae2306_b.jpg", "author": "Frank Shepherd", "sourceUrl": "https://www.flickr.com/photos/142252831@N04/29354491425", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/7411/9494969781_db9a1c5f73_b.jpg", "author": "NASA Goddard Photo and Video", "sourceUrl": "https://www.flickr.com/photos/24662369@N07/9494969781", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/1391/579946299_add753ce8e_b.jpg", "author": "Axel-D", "sourceUrl": "https://www.flickr.com/photos/7772108@N03/579946299", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "picknick": [
+      { "url": "https://cdn.stocksnap.io/img-thumbs/960w/QRAL4FD36P.jpg", "author": "Travel Adventures", "sourceUrl": "https://stocksnap.io/photo/picnic-wine-QRAL4FD36P", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+      { "url": "https://live.staticflickr.com/8020/7170028637_e5d034726a_b.jpg", "author": "Karen Roe", "sourceUrl": "https://www.flickr.com/photos/28752865@N08/7170028637", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/5115/7207504924_d14978cae1_b.jpg", "author": "seanmfreese", "sourceUrl": "https://www.flickr.com/photos/66779558@N02/7207504924", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "tiere": [
+      { "url": "https://live.staticflickr.com/166/352648935_70f5b75a9c_b.jpg", "author": "mape_s", "sourceUrl": "https://www.flickr.com/photos/50931380@N00/352648935", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/241/462583446_6b555e1dca_b.jpg", "author": "bartdubelaar", "sourceUrl": "https://www.flickr.com/photos/7859299@N04/462583446", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/2749/4286649485_4d61c8cba0_b.jpg", "author": "*~Dawn~*", "sourceUrl": "https://www.flickr.com/photos/12187063@N02/4286649485", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ],
+    "café": [
+      { "url": "https://live.staticflickr.com/3104/3223826525_ce6e21a4e7_b.jpg", "author": "avlxyz", "sourceUrl": "https://www.flickr.com/photos/10559879@N00/3223826525", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/3099/2828488127_04c9487894_b.jpg", "author": "nattu", "sourceUrl": "https://www.flickr.com/photos/33345813@N00/2828488127", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/3134/2921619260_98aeb1d64d_b.jpg", "author": "avlxyz", "sourceUrl": "https://www.flickr.com/photos/10559879@N00/2921619260", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" }
+    ],
+    "markt": [
+      { "url": "https://live.staticflickr.com/3085/2716575848_9d590770a2_b.jpg", "author": "Merelymel13", "sourceUrl": "https://www.flickr.com/photos/62967061@N00/2716575848", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+      { "url": "https://live.staticflickr.com/3470/3828791073_cb3a460956_b.jpg", "author": "ianmalcm", "sourceUrl": "https://www.flickr.com/photos/86805724@N00/3828791073", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+      { "url": "https://live.staticflickr.com/2233/2256197976_87fc8a00cf_b.jpg", "author": "John-Morgan", "sourceUrl": "https://www.flickr.com/photos/24742305@N00/2256197976", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+    ]
+  },
+  "categories": {
+    "sport": { "url": "https://live.staticflickr.com/7490/15602924927_28d4e9ac2b_b.jpg", "author": "berg_chabot", "sourceUrl": "https://www.flickr.com/photos/72933517@N00/15602924927", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+    "nature": { "url": "https://live.staticflickr.com/5330/16985155073_c10e13bd2e_b.jpg", "author": "DAVID MARCHENA", "sourceUrl": "https://www.flickr.com/photos/79458295@N04/16985155073", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+    "culture": { "url": "https://live.staticflickr.com/8272/28824773344_eec30bcfec_b.jpg", "author": "CarlosR38", "sourceUrl": "https://www.flickr.com/photos/73375929@N02/28824773344", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+    "creative": { "url": "https://live.staticflickr.com/8272/28824773344_eec30bcfec_b.jpg", "author": "CarlosR38", "sourceUrl": "https://www.flickr.com/photos/73375929@N02/28824773344", "license": "Public Domain", "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/" },
+    "music": { "url": "https://live.staticflickr.com/3490/3734360895_9ca52b84a2_b.jpg", "author": "Anirudh Koul", "sourceUrl": "https://www.flickr.com/photos/84856173@N00/3734360895", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" },
+    "food": { "url": "https://live.staticflickr.com/65535/51854947615_8bd2c0623c_b.jpg", "author": "NewcastleGateshead", "sourceUrl": "https://www.flickr.com/photos/51877986@N02/51854947615", "license": "CC0", "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/" },
+    "market": { "url": "https://upload.wikimedia.org/wikipedia/commons/6/65/HK_%E4%B8%AD%E7%92%B0_Central_%E7%B5%90%E5%BF%97%E8%A1%97_Gage_Street_%E5%98%89%E5%92%B8%E8%A1%97_Graham_Street_%E8%A1%97%E5%B8%82_market_stall_vegetable_February_2021_SS2_42.jpg", "author": "Shio Piemnd Wosmvi", "sourceUrl": "https://commons.wikimedia.org/w/index.php?curid=100192228", "license": "CC BY-SA", "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/" },
+    "social": { "url": "https://live.staticflickr.com/1019/1155025415_ec70690203_b.jpg", "author": "Joe Crawford (artlung)", "sourceUrl": "https://www.flickr.com/photos/37996599088@N01/1155025415", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+  },
+  "default": { "url": "https://live.staticflickr.com/1019/1155025415_ec70690203_b.jpg", "author": "Joe Crawford (artlung)", "sourceUrl": "https://www.flickr.com/photos/37996599088@N01/1155025415", "license": "CC BY", "licenseUrl": "https://creativecommons.org/licenses/by/2.0/" }
+}
