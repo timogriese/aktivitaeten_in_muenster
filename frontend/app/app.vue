@@ -48,15 +48,23 @@ async function search(request: ExploreRequest) {
     detailActivity.value = null
     ++roundNumber.value
     searched.value = true
-    if (settingsToggle.value?.getClientRects().length && settingsPanel.value?.contains(document.activeElement)) {
+    const focusWasInSettings = settingsPanel.value?.contains(document.activeElement)
+    mobileSettingsOpen.value = false
+    await nextTick()
+    if (focusWasInSettings && settingsToggle.value?.getClientRects().length) {
       settingsToggle.value.focus()
     }
-    mobileSettingsOpen.value = false
   }
   catch {
     if (version === searchVersion) searchError.value = 'Die Aktivitäten konnten nicht geladen werden. Bitte versuche die Suche erneut.'
   }
   finally { if (version === searchVersion) loading.value = false }
+}
+
+async function openSettings() {
+  mobileSettingsOpen.value = true
+  await nextTick()
+  settingsPanel.value?.focus({ preventScroll: true })
 }
 
 async function openDetails(activity: Activity) {
@@ -107,6 +115,9 @@ onBeforeUnmount(() => { ++searchVersion })
         </span>
         <span>MünsterMatch<span class="brand-dot">.</span></span>
       </div>
+      <button ref="settingsToggle" class="settings-toggle" type="button" :aria-expanded="mobileSettingsOpen" aria-controls="search-settings" @click="openSettings">
+        Neustart
+      </button>
       <div class="intro">
           <p class="eyebrow">Weniger überlegen. Mehr erleben.</p>
           <svg class="intro-logo" viewBox="0 0 132 84" fill="none" role="img" aria-label="Drei Aktivitätskarten mit einem Herz als Match-Symbol">
@@ -138,11 +149,7 @@ onBeforeUnmount(() => { ++searchVersion })
           </div>
         </div>
         <aside class="search-sidebar" :class="{ 'search-sidebar--collapsed': !mobileSettingsOpen }" aria-label="Aktivitäten suchen">
-          <button ref="settingsToggle" class="settings-toggle" type="button" :aria-expanded="mobileSettingsOpen" aria-controls="search-settings" @click="mobileSettingsOpen = !mobileSettingsOpen">
-            {{ mobileSettingsOpen ? 'Einstellungen' : 'Neustart' }}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-          </button>
-          <div id="search-settings" ref="settingsPanel" class="search-settings">
+          <div id="search-settings" ref="settingsPanel" class="search-settings" tabindex="-1">
             <SearchForm :loading="loading" @search="search" />
           </div>
         </aside>
@@ -150,7 +157,7 @@ onBeforeUnmount(() => { ++searchVersion })
           <div class="sr-only" role="status" aria-atomic="true">{{ announcement }}</div>
           <p v-if="searchError" class="result-error" role="alert">{{ searchError }}</p>
           <div v-if="searched && !activities.length" class="empty-result" role="status"><AppIcon name="discover" :size="28" /><h3>Gerade keine Aktivitäten gefunden</h3><p>Ändere deine Suchangaben und suche erneut.</p></div>
-          <div class="discover-view">
+          <div class="discover-view" :class="{ 'discover-view--editing': searched && mobileSettingsOpen }">
             <div v-if="chosen" class="chosen-result">
               <div class="chosen-heading"><span class="chosen-check" aria-hidden="true"><AppIcon name="check" :size="24" /></span><div><p class="eyebrow">Weniger überlegen. Los geht’s.</p><h3 ref="chosenHeading" tabindex="-1">Deine Auszeit steht fest.</h3></div></div>
               <ActivityCard :activity="chosen" @details="openDetails(chosen)" />
