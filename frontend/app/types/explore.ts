@@ -3,12 +3,6 @@ export interface Coordinates {
   lng: number
 }
 
-export interface AddressSuggestion {
-  id: string
-  label: string
-  location: Coordinates
-}
-
 export interface ExploreRequest {
   origin: Coordinates
   startsAt: string

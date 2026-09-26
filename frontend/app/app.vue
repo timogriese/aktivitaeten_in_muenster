@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { aaseeImage, explore } from '~/data/explore'
-import type { Activity, AddressSuggestion, ExploreRequest } from '~/types/explore'
+import type { Activity, ExploreRequest } from '~/types/explore'
 
-const origin = ref<AddressSuggestion | null>(null)
 const activities = ref<Activity[]>([])
 const selectedIndex = ref(0)
 const selected = computed(() => activities.value[selectedIndex.value] ?? null)
@@ -139,7 +138,7 @@ onBeforeUnmount(() => { ++searchVersion })
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
           </button>
           <div id="search-settings" ref="settingsPanel" class="search-settings">
-            <SearchForm v-model:origin="origin" :loading="loading" @search="search" />
+            <SearchForm :loading="loading" @search="search" />
           </div>
         </aside>
         <section class="results-section" :class="{ 'results-section--with-selection': selected }" :aria-labelledby="searched ? 'results-heading' : undefined" :aria-label="searched ? undefined : 'Entdecken'" :aria-busy="loading">
