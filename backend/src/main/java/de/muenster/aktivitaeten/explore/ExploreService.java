@@ -34,7 +34,7 @@ public class ExploreService {
     // The walk there may take at most this share of the available time, leaving time on site
     // and for the way back.
     private static final double MAX_TRAVEL_SHARE = 1.0 / 3.0;
-    private static final int MAX_RESULTS = 20;
+    private static final int MAX_RESULTS = 40;
     private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm");
 
     // The crawler's fixed categories (crawler/app/models/extraction.py) mapped to the German
