@@ -29,6 +29,7 @@ export interface Activity {
     licenseUrl: string
   }
   websiteUrl?: string
+  mapsUrl?: string
   startsAt?: string
   endsAt?: string
   openingHoursText?: string
