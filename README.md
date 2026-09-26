@@ -8,6 +8,41 @@ Monorepo-Struktur:
 - [`crawler/`](crawler/README.md) — Web-Crawling + KI-Extraktion, befüllt das Backend über dessen API
 - `frontend/` — Nuxt-Web-App, spricht per Dev-Proxy mit dem Backend
 
+## Farbschema
+
+Die App verwendet warme Cremetöne und gedeckte Grüntöne. Die wichtigsten
+UI-Farben sind in [`frontend/app/assets/main.css`](frontend/app/assets/main.css)
+definiert:
+
+| Verwendung | Hexcode |
+| --- | --- |
+| Seitenhintergrund (`--cream`) | `#F7F7EF` |
+| Karten und Suchformular | `#FFFEF9` |
+| Primärfarbe: Buttons, Logo und aktive Auswahl (`--green`) | `#254F3C` |
+| Primäre Buttons bei Hover | `#173C2B` |
+| Text auf primären Buttons | `#FFFEF5` |
+| Haupttext | `#253C30` |
+| Sekundärtext (`--muted`) | `#70776A` |
+| Rahmen und Trennlinien (`--line`) | `#E1E4D8` |
+| Teilen-Button: Hintergrund | `#EEF2E5` |
+| Teilen-Button: Rahmen | `#CCD8BD` |
+| Ausgewählte Interessen: Hintergrund | `#EAF0DD` |
+| Logo-Punkt | `#7A955A` |
+| Kategorie „Natur & draußen“ | `#607B48` |
+| Kategorie „Kunst & Kultur“ | `#9B6741` |
+| Kategorie „Sport & Bewegung“ | `#3E7E89` |
+| Kategorie „Musik & Bühne“ | `#826387` |
+| Herz / „Spannend“ | `#35956B` |
+| Kreuz / „Nicht für mich“ | `#DC7168` |
+| Event-Badge: Hintergrund / Text | `#F7E2C9` / `#784C32` |
+| Tastaturfokus | `#96742A` |
+| Formularfehler: Hintergrund / Text | `#FBEDE5` / `#954535` |
+| Suchfehler: Hintergrund / Text | `#FBECE2` / `#87422C` |
+
+Weitere Abstufungen für Hover, Schatten, Verläufe und Illustrationen stehen
+direkt im Stylesheet bzw. in den SVGs. Achtstellige Hexcodes enthalten in den
+letzten beiden Stellen zusätzlich den Alphawert für die Deckkraft.
+
 ## Lokal starten
 
 Voraussetzungen: Java 17+, Maven, uv, Node.js, make. Einmalig die OSM-Datei fürs
