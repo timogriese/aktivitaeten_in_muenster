@@ -15,7 +15,7 @@ const durationPresets = [
   { minutes: 120, label: '2 Stunden' },
   { minutes: 180, label: '3 Stunden' },
 ]
-const hours = ref<number | string>('')
+const hours = ref<number | string>(6)
 const minutes = ref<number | string>('')
 const locating = ref(false)
 const formError = ref('')
