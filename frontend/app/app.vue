@@ -78,14 +78,6 @@ async function decide(id: string, interested: boolean) {
   else selectedIndex.value = activities.value.findIndex(activity => !reviewedIds.value.includes(activity.id))
 }
 
-async function choose(activity: Activity) {
-  if (!roundComplete.value || !likedIds.value.includes(activity.id)) return
-  chosenId.value = activity.id
-  await nextTick()
-  chosenHeading.value?.focus({ preventScroll: true })
-  chosenHeading.value?.scrollIntoView({ behavior: 'instant', block: 'nearest' })
-}
-
 onMounted(async () => {
   const id = new URL(window.location.href).searchParams.get('activity')
   if (!id) return
@@ -175,7 +167,7 @@ onBeforeUnmount(() => { ++searchVersion })
                 <p>{{ shortlist.length ? 'Worauf hast du jetzt am meisten Lust?' : 'Ändere deine Suchangaben und starte eine neue Suche.' }}</p>
               </div>
               <div v-if="shortlist.length" class="shortlist-grid">
-                <ActivityCard v-for="activity in shortlist" :key="activity.id" :activity="activity" @details="openDetails(activity)"><template #actions><p class="shortlist-address"><AppIcon name="pin" :size="14" />{{ activity.address }}</p><button class="primary-button choose-button" type="button" @click="choose(activity)">Das mache ich<AppIcon name="arrow" :size="16" /></button></template></ActivityCard>
+                <ActivityCard v-for="activity in shortlist" :key="activity.id" :activity="activity" @details="openDetails(activity)"><template #actions><p class="shortlist-address"><AppIcon name="pin" :size="14" />{{ activity.address }}</p></template></ActivityCard>
               </div>
             </div>
             <template v-else-if="selected">

@@ -222,13 +222,8 @@ h1 em { font-weight: 400; color: #55714a; }
 .shortlist-grid .image-location { top: 10px; left: 10px; padding: 5px 7px; font-size: 9px; }
 .shortlist-grid .event-badge { top: 42px; left: 10px; right: auto; padding: 5px 7px; font-size: 9px; }
 .shortlist-grid .timing-info { font-size: 10px; }
-.shortlist-grid .card-more { min-height: 40px; padding: 8px 0; background: transparent; border: 0; border-radius: 4px; color: var(--green); font-size: 11px; gap: 7px; }
-.shortlist-grid .card-more:not(:disabled):hover { background: transparent; box-shadow: none; text-decoration: underline; text-underline-offset: 4px; }
-.shortlist-grid .card-actions { flex-direction: column; gap: 0; margin-top: 10px; }
-.shortlist-grid .card-travel { min-height: 40px; padding: 8px 0; background: transparent; border: 0; border-radius: 4px; color: var(--green); font-size: 11px; gap: 7px; }
-.shortlist-grid .card-travel:hover { background: transparent; box-shadow: none; text-decoration: underline; text-underline-offset: 4px; }
-.shortlist-address { display: flex; align-items: flex-start; gap: 6px; margin: 12px 0 18px; font-size: 10px; line-height: 1.6; color: #626e59; }
-.shortlist-grid .choose-button { width: 100%; margin-top: auto; font-size: 11px; padding: 12px 9px; gap: 7px; }
+.shortlist-grid .card-actions { flex-direction: column; width: 100%; margin-top: 10px; }
+.shortlist-address { display: flex; align-items: flex-start; gap: 6px; margin: 12px 0 0; font-size: 10px; line-height: 1.6; color: #626e59; }
 .chosen-heading { display: flex; align-items: center; gap: 15px; padding: 19px; background: #eaf0dd; border: 1px solid #d4dfc3; border-radius: 14px; margin-bottom: 20px; }
 .chosen-heading h3 { font-size: 24px; font-weight: 500; letter-spacing: -.7px; line-height: 1.2; margin-top: 7px; }
 .chosen-heading .eyebrow { font-size: 9px; color: #566c45; }
@@ -248,7 +243,6 @@ h1 em { font-weight: 400; color: #55714a; }
   .shortlist-grid > .activity-card { display: grid; grid-template-columns: 130px minmax(0, 1fr); }
   .shortlist-grid .activity-image { height: 100%; min-height: 230px; }
   .shortlist-grid .card-content { padding: 20px; }
-  .shortlist-grid .choose-button { width: auto; }
   .app-shell { padding: 0 32px; }
   .workspace { grid-template-columns: 288px minmax(0, 1fr); gap: 24px; }
   .search-form { padding: 24px 20px; }
@@ -259,20 +253,23 @@ h1 em { font-weight: 400; color: #55714a; }
   .activity-image { height: 265px; }
   .card-content { padding: 24px; }
 }
-@media (max-width: 760px) {
-  .welcome-view { display: none; }
-  .round-completion { padding: 24px 16px; }
-  .app-shell { padding: 0 22px; }
-  .site-header { min-height: 83px; }
-  .brand { font-size: 27px; gap: 8px; }
-  .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
-  .intro { display: none; }
-  h1 { font-size: 40px; letter-spacing: -1.5px; }
+@media (max-width: 900px) {
   .workspace { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .settings-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fffef9; color: var(--green); font-size: 13px; font-weight: 600; }
   .settings-toggle[aria-expanded='true'] svg { transform: rotate(180deg); }
   .search-settings { margin-top: 12px; }
   .search-sidebar--collapsed .search-settings { display: none; }
+}
+@media (max-width: 760px) {
+  .welcome-view { display: none; }
+  .round-completion { padding: 24px 16px; }
+  .app-shell { padding: 0 22px; }
+  .site-header { min-height: 64px; padding-block: 10px; }
+  .workspace { margin-top: 16px; gap: 14px; }
+  .brand { font-size: 27px; gap: 8px; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
+  .intro { display: none; }
+  h1 { font-size: 40px; letter-spacing: -1.5px; }
   .search-form { padding: 24px; }
   .form-heading { margin-bottom: 24px; }
   .form-heading h2 { font-size: 22px; }
@@ -291,6 +288,16 @@ h1 em { font-weight: 400; color: #55714a; }
   .card-actions > .activity-share { min-width: 0; }
   .card-actions .primary-button, .card-actions .share-button { gap: 5px; padding: 10px 8px; font-size: 11px; }
   .card-content h3 { font-size: 29px; }
+  .activity-decision .activity-image { height: clamp(120px, 22svh, 180px); }
+  .activity-decision .card-content { padding: 14px 16px; }
+  .activity-decision .card-content h3 { margin-top: 6px; font-size: 23px; }
+  .activity-decision .card-description { margin-top: 8px; font-size: 12px; line-height: 1.5; }
+  .activity-decision .timing-info { margin-top: 10px; gap: 5px 12px; }
+  .activity-decision .card-actions { margin-top: 12px; }
+  .decision-actions { padding-top: 12px; gap: 32px; }
+  .decision-option { gap: 5px; }
+  .decision-button { width: 60px; height: 60px; }
+  .swipe-hint { margin-top: 8px; line-height: 1.5; }
   .detail-content { padding: 25px; }
   .detail-content h2 { font-size: 29px; }
   .detail-facts > div { grid-template-columns: 125px minmax(0, 1fr); gap: 10px; }
@@ -298,9 +305,10 @@ h1 em { font-weight: 400; color: #55714a; }
 @media (max-width: 440px) {
   .round-completion.round-completion--success { grid-template-columns: 40px minmax(0, 1fr); column-gap: 10px; padding: 14px; }
   .success-emblem, .success-check { width: 40px; height: 40px; }
-  .shortlist-grid > .activity-card { grid-template-columns: 90px minmax(0, 1fr); }
+  .shortlist-grid > .activity-card { grid-template-columns: minmax(0, 1fr); }
+  .shortlist-grid .activity-image { height: 230px; min-height: 0; }
   .shortlist-grid .card-content { padding: 17px; }
-  .shortlist-grid h3 { font-size: 23px; }
+  .shortlist-grid h3 { font-size: 23px; overflow-wrap: anywhere; }
   .shortlist-grid .image-location { display: none; }
   .shortlist-grid .event-badge { left: 6px; top: 10px; font-size: 8px; }
   .chosen-heading h3 { font-size: 21px; }
