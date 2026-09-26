@@ -43,7 +43,11 @@ Weitere Abstufungen für Hover, Schatten, Verläufe und Illustrationen stehen
 direkt im Stylesheet bzw. in den SVGs. Achtstellige Hexcodes enthalten in den
 letzten beiden Stellen zusätzlich den Alphawert für die Deckkraft.
 
-## Lokal starten
+## Lokal starten mit docker compose
+
+docker compose up --build
+
+## Lokal starten mit lokalen dependencies
 
 Voraussetzungen: Java 17+, Maven, uv, Node.js, make. Einmalig die OSM-Datei fürs
 Routing laden (siehe [`backend/README.md`](backend/README.md)) und

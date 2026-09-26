@@ -1,6 +1,33 @@
 name: aktivitaeten-in-muenster
 
 services:
+  # One-shot init container: downloads the OSM extract only if it is missing.
+  # Runs as the host user (override LOCAL_UID/LOCAL_GID if yours is not 1000) so the
+  # file lands in backend/data with the same ownership as the rest of the repo.
+  geodata:
+    image: curlimages/curl:8.11.1
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        target=/backend/data/muenster-regbez.osm.pbf
+        if [ -s "$$target" ]; then
+          echo "Geodata already present at $$target - skipping download."
+          exit 0
+        fi
+        mkdir -p "$$(dirname "$$target")"
+        echo "Downloading geodata to $$target ..."
+        curl -L --fail --output "$$target.part" https://download.geofabrik.de/europe/germany/nordrhein-westfalen/muenster-regbez-latest.osm.pbf
+        mv "$$target.part" "$$target"
+        echo "Geodata download complete."
+    volumes:
+      # Mount the parent dir so backend/data can be created with the host user's ownership.
+      - ./backend:/backend
+    networks:
+      - app
+    restart: "no"
+
   frontend:
     # Built and pushed by .github/workflows/docker-publish.yml on every push to main.
     # `docker compose pull` fetches it; `build:` stays so `--build` still works locally.
@@ -39,6 +66,9 @@ services:
     networks:
       - app
     restart: unless-stopped
+    depends_on:
+      geodata:
+        condition: service_completed_successfully
 
   nginx:
     image: nginx:1.27-alpine
