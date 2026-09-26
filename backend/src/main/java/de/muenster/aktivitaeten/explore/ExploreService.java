@@ -3,6 +3,8 @@ package de.muenster.aktivitaeten.explore;
 import de.muenster.aktivitaeten.activity.Activity;
 import de.muenster.aktivitaeten.activity.OpeningHours;
 import de.muenster.aktivitaeten.activity.ActivityRepository;
+import de.muenster.aktivitaeten.activity.TagCatalog;
+import de.muenster.aktivitaeten.activity.Location;
 import de.muenster.aktivitaeten.explore.ExploreResponse.Coordinates;
 import de.muenster.aktivitaeten.explore.ExploreResponse.ExploreActivity;
 import de.muenster.aktivitaeten.routing.Coordinate;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Finds activities that fit a time budget: reachable on foot from the origin, and open (or
@@ -51,14 +54,20 @@ public class ExploreService {
 
     private final ActivityRepository activityRepository;
     private final WalkingRouterService walkingRouterService;
+    private final TagCatalog tagCatalog;
 
-    public ExploreService(ActivityRepository activityRepository, WalkingRouterService walkingRouterService) {
+    public ExploreService(ActivityRepository activityRepository, WalkingRouterService walkingRouterService,
+                          TagCatalog tagCatalog) {
         this.activityRepository = activityRepository;
         this.walkingRouterService = walkingRouterService;
+        this.tagCatalog = tagCatalog;
     }
 
     public ExploreResponse explore(ExploreRequest request) {
-        List<Activity> activities = activityRepository.findAll();
+        Set<String> preferredTags = Set.copyOf(tagCatalog.clean(
+                request.preferredTags() == null ? List.of() : request.preferredTags()));
+        List<Activity> activities = preferredTags.isEmpty()
+                ? activityRepository.findAll() : activityRepository.findAllWithTags();
         if (activities.isEmpty()) {
             return new ExploreResponse(List.of());
         }
@@ -85,11 +94,19 @@ public class ExploreService {
             ZonedDateTime arrival = start.plus(travel);
             ZonedDateTime leave = end.minus(travel);
             openWindow(activity.getOpeningHours(), arrival, leave)
-                    .ifPresent(window -> matches.add(new Match(activity, travel, arrival, window)));
+                    .ifPresent(window -> {
+                        int preferenceMatches = preferredTags.isEmpty() ? 0 : (int) activity.getTags().stream()
+                                .map(tag -> tag.trim().toLowerCase(Locale.ROOT))
+                                .distinct()
+                                .filter(preferredTags::contains)
+                                .count();
+                        matches.add(new Match(activity, travel, arrival, window, preferenceMatches));
+                    });
         }
 
         return new ExploreResponse(matches.stream()
-                .sorted(Comparator.comparing(Match::travel))
+                .sorted(Comparator.comparingInt(Match::preferenceMatches).reversed()
+                        .thenComparing(Match::travel))
                 .limit(MAX_RESULTS)
                 .map(this::toResponse)
                 .toList());
@@ -140,11 +157,19 @@ public class ExploreService {
                 new Coordinates(activity.getLocation().getLat(), activity.getLocation().getLon()),
                 activity.getLocation().getAddress(),
                 activity.getSource() == null ? null : activity.getSource().getUrl(),
+                mapsUrl(activity.getLocation()),
                 event ? window.open().toOffsetDateTime().toString() : null,
                 event ? window.close().toOffsetDateTime().toString() : null,
                 event ? null : CLOCK.format(window.open()) + "–" + CLOCK.format(window.close()) + " Uhr",
                 (int) Math.max(1, Math.round(match.travel().toSeconds() / 60.0)),
                 timingLabel);
+    }
+
+    private static String mapsUrl(Location location) {
+        if (location == null || location.getLat() == null || location.getLon() == null) {
+            return null;
+        }
+        return "https://www.google.com/maps/search/?api=1&query=" + location.getLat() + "," + location.getLon();
     }
 
     private static String categoryLabel(String category) {
@@ -158,6 +183,7 @@ public class ExploreService {
     private record Window(ZonedDateTime open, ZonedDateTime close) {
     }
 
-    private record Match(Activity activity, Duration travel, ZonedDateTime arrival, Window window) {
+    private record Match(Activity activity, Duration travel, ZonedDateTime arrival, Window window,
+                         int preferenceMatches) {
     }
 }

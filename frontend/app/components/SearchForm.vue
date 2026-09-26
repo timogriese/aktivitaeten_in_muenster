@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Temporal } from '@js-temporal/polyfill'
 import type { ExploreRequest } from '~/types/explore'
+import tagCatalog from '../../../shared/tags.json'
 
 const props = defineProps<{ loading: boolean }>()
 const emit = defineEmits<{ search: [request: ExploreRequest] }>()
@@ -16,7 +17,33 @@ const minutes = ref<number | string>('')
 const locating = ref(false)
 const formError = ref('')
 const errorField = ref('')
+const preferredTags = ref<string[]>([])
+const interestsOpen = ref(false)
+const interestSearch = ref('')
+const quickInterests = ['entspannt', 'sportlich', 'kreativ', 'kulturell', 'gesellig', 'draußen']
+const interestGroupNames = ['Charakter', 'Ort', 'Bewegung & Sport', 'Kultur & Kreatives', 'Spiel & Geselligkeit', 'Natur & Tiere', 'Essen & Trinken', 'Lernen']
+const interestQuery = computed(() => interestSearch.value.trim().toLocaleLowerCase('de'))
+const interestGroups = computed(() => Object.entries(tagCatalog)
+  .filter(([name]) => interestGroupNames.includes(name))
+  .map(([name, tags]) => ({
+    name,
+    tags: tags.filter(tag => interestLabel(tag).toLocaleLowerCase('de').includes(interestQuery.value)
+      || name.toLocaleLowerCase('de').includes(interestQuery.value)),
+    selectedCount: tags.filter(tag => preferredTags.value.includes(tag)).length,
+  }))
+  .filter(group => group.tags.length > 0))
 let locationVersion = 0
+
+function interestLabel(tag: string) {
+  const label = tag.replaceAll('-', ' ')
+  return label.charAt(0).toLocaleUpperCase('de') + label.slice(1)
+}
+
+function toggleInterest(tag: string) {
+  preferredTags.value = preferredTags.value.includes(tag)
+    ? preferredTags.value.filter(selected => selected !== tag)
+    : [...preferredTags.value, tag]
+}
 
 watch(durationChoice, () => {
   if (errorField.value.startsWith('duration-')) { formError.value = ''; errorField.value = '' }
@@ -65,7 +92,7 @@ function submit() {
         return
       }
       const startsAt = Temporal.Now.zonedDateTimeISO('Europe/Berlin').toString({ timeZoneName: 'never', calendarName: 'never', smallestUnit: 'second' })
-      emit('search', { origin, startsAt, availableMinutes })
+      emit('search', { origin, startsAt, availableMinutes, preferredTags: [...preferredTags.value] })
     },
     (error) => {
       if (version !== locationVersion) return
@@ -99,6 +126,40 @@ onBeforeUnmount(() => { ++locationVersion })
       <div v-if="durationChoice === 'custom'" class="duration-inputs">
         <label class="number-field"><span>Stunden</span><input id="duration-hours" v-model="hours" type="number" min="0" step="1" inputmode="numeric" placeholder="0" :aria-invalid="errorField === 'duration-hours'" :aria-describedby="errorField === 'duration-hours' ? 'search-form-error' : undefined"></label>
         <label class="number-field"><span>Minuten</span><input id="duration-minutes" v-model="minutes" type="number" min="0" step="1" inputmode="numeric" placeholder="0" :aria-invalid="errorField === 'duration-hours'" :aria-describedby="errorField === 'duration-hours' ? 'search-form-error' : undefined"></label>
+      </div>
+    </fieldset>
+    <fieldset class="search-field interest-field">
+      <legend>Worauf hast du Lust? <span class="interest-optional">Optional</span></legend>
+      <div class="interest-chips">
+        <button v-for="tag in quickInterests" :key="tag" type="button" class="interest-chip" :aria-pressed="preferredTags.includes(tag)" @click="toggleInterest(tag)">
+          {{ interestLabel(tag) }}<span v-if="preferredTags.includes(tag)" aria-hidden="true">✓</span>
+        </button>
+      </div>
+      <button type="button" class="interest-toggle" :aria-expanded="interestsOpen" aria-controls="interest-catalog" @click="interestsOpen = !interestsOpen">
+        Weitere Interessen auswählen <span aria-hidden="true">{{ interestsOpen ? '−' : '+' }}</span>
+      </button>
+      <div v-show="interestsOpen" id="interest-catalog" class="interest-catalog">
+        <label class="interest-search">
+          <span>Interessen suchen</span>
+          <input v-model="interestSearch" type="search" @keydown.enter.prevent>
+        </label>
+        <details v-for="group in interestGroups" :key="group.name" class="interest-group" :open="interestQuery.length > 0">
+          <summary>{{ group.name }}<span v-if="group.selectedCount" class="interest-count">{{ group.selectedCount }}<span class="sr-only"> ausgewählt</span></span></summary>
+          <div class="interest-chips">
+            <button v-for="tag in group.tags" :key="tag" type="button" class="interest-chip" :aria-pressed="preferredTags.includes(tag)" @click="toggleInterest(tag)">
+              {{ interestLabel(tag) }}<span v-if="preferredTags.includes(tag)" aria-hidden="true">✓</span>
+            </button>
+          </div>
+        </details>
+        <p v-if="!interestGroups.length" class="interest-empty" role="status">Keine Interessen gefunden.</p>
+      </div>
+      <div v-if="preferredTags.length" class="selected-interests">
+        <p>Ausgewählt:</p>
+        <div class="interest-chips">
+          <button v-for="tag in preferredTags" :key="tag" type="button" class="interest-chip interest-chip--selected" :aria-label="`${interestLabel(tag)} entfernen`" @click="toggleInterest(tag)">
+            {{ interestLabel(tag) }}<span aria-hidden="true">×</span>
+          </button>
+        </div>
       </div>
     </fieldset>
     <p v-if="formError" id="search-form-error" class="inline-error" role="alert">{{ formError }}</p>
