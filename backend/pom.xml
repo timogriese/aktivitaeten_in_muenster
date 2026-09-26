@@ -73,11 +73,12 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
-            <!-- Tag vocabulary shared with the crawler, single source of truth. -->
+            <!-- Tag vocabulary and tag-image catalog shared with the crawler, single source of truth. -->
             <resource>
                 <directory>${project.basedir}/../shared</directory>
                 <includes>
                     <include>tags.json</include>
+                    <include>tag_images.json</include>
                 </includes>
             </resource>
         </resources>
