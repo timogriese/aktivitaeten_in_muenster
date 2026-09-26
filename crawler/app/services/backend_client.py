@@ -43,13 +43,20 @@ class BackendClient:
 
         Connection errors (backend down) still raise - that should fail the crawl loudly.
         """
-        known = [(existing.title, existing.location) for existing in await self.list_activities()]
+        existing = await self.list_activities()
+        known = [(activity.title, activity.location) for activity in existing]
+        # Same page as an existing entry is the same offer: reuse its title so the push becomes an
+        # update instead of a second row (the LLM sometimes names the same page differently each crawl).
+        url_to_title = {a.source.url.rstrip("/"): a.title for a in existing if a.source.url}
         # Sequential on purpose: the backend dedups by title against what's already
         # stored, so pushing one at a time also catches duplicates within this same
         # batch (e.g. two search queries surfacing the same activity).
         pushed = []
         async with httpx.AsyncClient(timeout=10.0) as client:
             for activity in activities:
+                existing_title = url_to_title.get(activity.source.url.rstrip("/"))
+                if existing_title and existing_title != activity.title:
+                    activity = activity.model_copy(update={"title": existing_title})
                 activity = align_to_existing(activity, known)
                 try:
                     pushed.append(await self.create_activity(client, activity))
