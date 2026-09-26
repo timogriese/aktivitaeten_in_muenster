@@ -8,6 +8,7 @@ RUN mvn -q -B -DskipTests dependency:go-offline || true
 
 COPY backend/src ./src
 COPY shared/tags.json /build/shared/tags.json
+COPY shared/tag_images.json /build/shared/tag_images.json
 RUN mvn -q -B -DskipTests package
 
 FROM eclipse-temurin:17-jre AS runtime
