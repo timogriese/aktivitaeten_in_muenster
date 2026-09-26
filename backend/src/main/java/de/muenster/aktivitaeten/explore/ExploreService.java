@@ -3,6 +3,7 @@ package de.muenster.aktivitaeten.explore;
 import de.muenster.aktivitaeten.activity.Activity;
 import de.muenster.aktivitaeten.activity.OpeningHours;
 import de.muenster.aktivitaeten.activity.ActivityRepository;
+import de.muenster.aktivitaeten.activity.Location;
 import de.muenster.aktivitaeten.explore.ExploreResponse.Coordinates;
 import de.muenster.aktivitaeten.explore.ExploreResponse.ExploreActivity;
 import de.muenster.aktivitaeten.routing.Coordinate;
@@ -140,11 +141,19 @@ public class ExploreService {
                 new Coordinates(activity.getLocation().getLat(), activity.getLocation().getLon()),
                 activity.getLocation().getAddress(),
                 activity.getSource() == null ? null : activity.getSource().getUrl(),
+                mapsUrl(activity.getLocation()),
                 event ? window.open().toOffsetDateTime().toString() : null,
                 event ? window.close().toOffsetDateTime().toString() : null,
                 event ? null : CLOCK.format(window.open()) + "–" + CLOCK.format(window.close()) + " Uhr",
                 (int) Math.max(1, Math.round(match.travel().toSeconds() / 60.0)),
                 timingLabel);
+    }
+
+    private static String mapsUrl(Location location) {
+        if (location == null || location.getLat() == null || location.getLon() == null) {
+            return null;
+        }
+        return "https://www.google.com/maps/search/?api=1&query=" + location.getLat() + "," + location.getLon();
     }
 
     private static String categoryLabel(String category) {

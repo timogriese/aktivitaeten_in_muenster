@@ -16,6 +16,7 @@ public record ExploreResponse(List<ExploreActivity> activities) {
             Coordinates location,
             String address,
             String websiteUrl,
+            String mapsUrl,
             String startsAt,
             String endsAt,
             String openingHoursText,
