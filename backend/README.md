@@ -9,7 +9,7 @@ The project requires Java 17+ and Maven. Once, download the OSM extract used for
 walking routes (133 MB, not in git) into `backend/data/`:
 
 ```bash
-curl -L -o data/muenster-regbez-260924.osm.pbf https://download.geofabrik.de/europe/germany/nordrhein-westfalen/muenster-regbez-260924.osm.pbf
+curl -L -o data/muenster-regbez.osm.pbf https://download.geofabrik.de/europe/germany/nordrhein-westfalen/muenster-regbez-latest.osm.pbf
 ```
 
 Then:
