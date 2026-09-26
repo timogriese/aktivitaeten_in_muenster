@@ -25,7 +25,7 @@ services:
       # Shared SQLite database at the repo root.
       - ./activities.db:/data/activities.db
       # OSM extract (backend/data/muenster-regbez.osm.pbf), see backend/README.md.
-      - ./backend/data:/data/os>m:ro
+      - ./backend/data:/data/osm:ro
       # GraphHopper graph cache, imported once and reused.
       - routing-graph:/data/graph
     expose:
