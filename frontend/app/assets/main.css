@@ -259,6 +259,13 @@ h1 em { font-weight: 400; color: #55714a; }
   .activity-image { height: 265px; }
   .card-content { padding: 24px; }
 }
+@media (max-width: 900px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .settings-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fffef9; color: var(--green); font-size: 13px; font-weight: 600; }
+  .settings-toggle[aria-expanded='true'] svg { transform: rotate(180deg); }
+  .search-settings { margin-top: 12px; }
+  .search-sidebar--collapsed .search-settings { display: none; }
+}
 @media (max-width: 760px) {
   .welcome-view { display: none; }
   .round-completion { padding: 24px 16px; }
@@ -268,11 +275,6 @@ h1 em { font-weight: 400; color: #55714a; }
   .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
   .intro { display: none; }
   h1 { font-size: 40px; letter-spacing: -1.5px; }
-  .workspace { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-  .settings-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fffef9; color: var(--green); font-size: 13px; font-weight: 600; }
-  .settings-toggle[aria-expanded='true'] svg { transform: rotate(180deg); }
-  .search-settings { margin-top: 12px; }
-  .search-sidebar--collapsed .search-settings { display: none; }
   .search-form { padding: 24px; }
   .form-heading { margin-bottom: 24px; }
   .form-heading h2 { font-size: 22px; }
@@ -298,9 +300,10 @@ h1 em { font-weight: 400; color: #55714a; }
 @media (max-width: 440px) {
   .round-completion.round-completion--success { grid-template-columns: 40px minmax(0, 1fr); column-gap: 10px; padding: 14px; }
   .success-emblem, .success-check { width: 40px; height: 40px; }
-  .shortlist-grid > .activity-card { grid-template-columns: 90px minmax(0, 1fr); }
+  .shortlist-grid > .activity-card { grid-template-columns: minmax(0, 1fr); }
+  .shortlist-grid .activity-image { height: 230px; min-height: 0; }
   .shortlist-grid .card-content { padding: 17px; }
-  .shortlist-grid h3 { font-size: 23px; }
+  .shortlist-grid h3 { font-size: 23px; overflow-wrap: anywhere; }
   .shortlist-grid .image-location { display: none; }
   .shortlist-grid .event-badge { left: 6px; top: 10px; font-size: 8px; }
   .chosen-heading h3 { font-size: 21px; }
