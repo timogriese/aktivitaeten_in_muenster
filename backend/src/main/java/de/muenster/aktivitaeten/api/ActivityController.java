@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -35,7 +37,9 @@ public class ActivityController {
 
     @GetMapping
     public List<Activity> list() {
-        return activityRepository.findAllWithTags();
+        List<Activity> activities = new ArrayList<>(activityRepository.findAllWithTags());
+        Collections.shuffle(activities);
+        return activities;
     }
 
     @PostMapping
