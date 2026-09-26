@@ -21,9 +21,15 @@ public record ExploreResponse(List<ExploreActivity> activities) {
             String endsAt,
             String openingHoursText,
             Integer travelTimeMinutes,
-            String timingLabel) {
+            String timingLabel,
+            String imageUrl,
+            ImageCredit imageCredit) {
     }
 
     public record Coordinates(double lat, double lng) {
+    }
+
+    /** Mirrors the frontend's Activity.imageCredit (frontend/app/types/explore.ts). */
+    public record ImageCredit(String author, String sourceUrl, String license, String licenseUrl) {
     }
 }
