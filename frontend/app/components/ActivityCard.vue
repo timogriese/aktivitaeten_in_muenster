@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ActivityShare from './ActivityShare.vue'
 import type { Activity } from '~/types/explore'
 const props = defineProps<{ activity: Activity }>()
 defineEmits<{ details: [] }>()
@@ -23,6 +24,7 @@ const categoryIcon = computed(() => ({ 'Natur & draußen': 'leaf', 'Kunst & Kult
       <div class="card-actions">
         <button class="primary-button card-more" type="button" @click="$emit('details')">Mehr erfahren <AppIcon name="arrow" :size="18" /></button>
         <a v-if="activity.mapsUrl" class="primary-button card-travel" :href="activity.mapsUrl" :aria-label="`Routenplanung für ${activity.title} in Google Maps`" target="_blank" rel="noopener noreferrer">Reise<AppIcon name="navigate" :size="18" /><span class="sr-only"> (neuer Tab)</span></a>
+        <ActivityShare :key="activity.id" :activity="activity" />
       </div>
       <slot name="actions" />
     </div>

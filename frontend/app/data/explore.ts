@@ -1,4 +1,4 @@
-import type { ExploreRequest, ExploreResponse } from '~/types/explore'
+import type { Activity, ExploreRequest, ExploreResponse } from '~/types/explore'
 
 export const aaseeImage = {
   imageUrl: '/images/aasee.jpg',
@@ -15,4 +15,8 @@ export const aaseeImage = {
 // Proxied to the Spring Boot backend, see routeRules in nuxt.config.ts.
 export async function explore(request: ExploreRequest): Promise<ExploreResponse> {
   return await $fetch<ExploreResponse>('/api/explore', { method: 'POST', body: request })
+}
+
+export async function getActivity(id: string): Promise<Activity> {
+  return await $fetch<Activity>(`/api/explore/${encodeURIComponent(id)}`)
 }

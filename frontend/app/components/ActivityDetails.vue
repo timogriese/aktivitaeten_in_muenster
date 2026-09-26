@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ActivityShare from './ActivityShare.vue'
 import type { Activity } from '~/types/explore'
 defineProps<{ activity: Activity | null }>()
 const emit = defineEmits<{ close: [] }>()
@@ -52,8 +53,9 @@ defineExpose({ open, close })
           <div v-if="activity.timingLabel"><dt><AppIcon name="clock" />Zeitlicher Hinweis</dt><dd>{{ activity.timingLabel }}</dd></div>
           <div v-if="activity.travelTimeMinutes != null"><dt><AppIcon name="arrow" />Anreise</dt><dd>{{ activity.travelTimeMinutes }} Minuten</dd></div>
         </dl>
-        <div v-if="safeWebsite(activity.websiteUrl)" class="detail-actions">
-          <a class="text-link" :href="safeWebsite(activity.websiteUrl)" target="_blank" rel="noopener noreferrer">Website öffnen<AppIcon name="external" :size="16" /><span class="sr-only"> (neuer Tab)</span></a>
+        <div class="detail-actions">
+          <ActivityShare :key="activity.id" :activity="activity" />
+          <a v-if="safeWebsite(activity.websiteUrl)" class="text-link" :href="safeWebsite(activity.websiteUrl)" target="_blank" rel="noopener noreferrer">Website öffnen<AppIcon name="external" :size="16" /><span class="sr-only"> (neuer Tab)</span></a>
         </div>
       </div>
     </div>

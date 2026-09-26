@@ -17,6 +17,7 @@ const paths: Record<string, string> = {
   search: 'M15 15l6 6M17 9a8 8 0 1 1-16 0 8 8 0 0 1 16 0',
   calendar: 'M5 5h14a2 2 0 0 1 2 2v13H3V7a2 2 0 0 1 2-2Zm2-3v6m10-6v6M3 11h18',
   external: 'M14 3h7v7m0-7L10 14M10 3H3v18h18v-7',
+  share: 'M12 16V3m-4 4 4-4 4 4M7 11H4v10h16V11h-3',
   check: 'm5 12 4 4L19 6',
   sun: 'M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1M17 12a5 5 0 1 1-10 0 5 5 0 0 1 10 0',
 }

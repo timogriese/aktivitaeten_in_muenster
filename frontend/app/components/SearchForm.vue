@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { Temporal } from '@js-temporal/polyfill'
 import type { ExploreRequest } from '~/types/explore'
-import tagCatalog from '../../../shared/tags.json'
+
+const { data: tagCatalog } = await useFetch<Record<string, string[]>>('/api/tags', {
+  default: () => ({}),
+})
 
 const props = defineProps<{ loading: boolean }>()
 const emit = defineEmits<{ search: [request: ExploreRequest] }>()
@@ -23,7 +26,7 @@ const interestSearch = ref('')
 const quickInterests = ['entspannt', 'sportlich', 'kreativ', 'kulturell', 'gesellig', 'draußen']
 const interestGroupNames = ['Charakter', 'Ort', 'Bewegung & Sport', 'Kultur & Kreatives', 'Spiel & Geselligkeit', 'Natur & Tiere', 'Essen & Trinken', 'Lernen']
 const interestQuery = computed(() => interestSearch.value.trim().toLocaleLowerCase('de'))
-const interestGroups = computed(() => Object.entries(tagCatalog)
+const interestGroups = computed(() => Object.entries(tagCatalog.value)
   .filter(([name]) => interestGroupNames.includes(name))
   .map(([name, tags]) => ({
     name,

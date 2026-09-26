@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aaseeImage, explore } from '~/data/explore'
+import { aaseeImage, explore, getActivity } from '~/data/explore'
 import type { Activity, ExploreRequest } from '~/types/explore'
 
 const activities = ref<Activity[]>([])
@@ -85,6 +85,19 @@ async function choose(activity: Activity) {
   chosenHeading.value?.focus({ preventScroll: true })
   chosenHeading.value?.scrollIntoView({ behavior: 'instant', block: 'nearest' })
 }
+
+onMounted(async () => {
+  const id = new URL(window.location.href).searchParams.get('activity')
+  if (!id) return
+  const version = searchVersion
+  try {
+    const activity = await getActivity(id)
+    if (version === searchVersion && !detailActivity.value) await openDetails(activity)
+  }
+  catch {
+    if (version === searchVersion) searchError.value = 'Die geteilte Aktivität konnte nicht geladen werden.'
+  }
+})
 
 onBeforeUnmount(() => { ++searchVersion })
 </script>

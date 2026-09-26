@@ -12,6 +12,8 @@ import de.muenster.aktivitaeten.routing.WalkingRouteRequest;
 import de.muenster.aktivitaeten.routing.WalkingRouteResponse;
 import de.muenster.aktivitaeten.routing.WalkingRouterService;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -112,6 +114,22 @@ public class ExploreService {
                 .toList());
     }
 
+    public ExploreActivity getActivity(String id) {
+        Activity activity = activityRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Activity not found"));
+        OpeningHours hours = activity.getOpeningHours();
+        Window window = null;
+        if (hours.getDate() != null) {
+            ZonedDateTime open = hours.getDate().atTime(hours.getStart()).atZone(ZONE);
+            ZonedDateTime close = hours.getDate().atTime(hours.getEnd()).atZone(ZONE);
+            if (!close.isAfter(open)) {
+                close = close.plusDays(1);
+            }
+            window = new Window(open, close);
+        }
+        return toResponse(activity, window, null, null);
+    }
+
     /** The opening window that overlaps [arrival, leave], if any. */
     private Optional<Window> openWindow(OpeningHours hours, ZonedDateTime arrival, ZonedDateTime leave) {
         // Undated activities repeat daily; yesterday's window matters for overnight ones (22:00-05:00).
@@ -148,6 +166,14 @@ public class ExploreService {
                     : "Geöffnet bis " + CLOCK.format(window.close()) + " Uhr";
         }
 
+        return toResponse(activity, window,
+                (int) Math.max(1, Math.round(match.travel().toSeconds() / 60.0)), timingLabel);
+    }
+
+    private ExploreActivity toResponse(Activity activity, Window window, Integer travelTimeMinutes,
+                                       String timingLabel) {
+        OpeningHours hours = activity.getOpeningHours();
+        boolean event = hours.getDate() != null;
         return new ExploreActivity(
                 activity.getId(),
                 activity.getTitle(),
@@ -160,8 +186,10 @@ public class ExploreService {
                 mapsUrl(activity.getLocation()),
                 event ? window.open().toOffsetDateTime().toString() : null,
                 event ? window.close().toOffsetDateTime().toString() : null,
-                event ? null : CLOCK.format(window.open()) + "–" + CLOCK.format(window.close()) + " Uhr",
-                (int) Math.max(1, Math.round(match.travel().toSeconds() / 60.0)),
+                event ? null : (window == null
+                        ? CLOCK.format(hours.getStart()) + "–" + CLOCK.format(hours.getEnd()) + " Uhr"
+                        : CLOCK.format(window.open()) + "–" + CLOCK.format(window.close()) + " Uhr"),
+                travelTimeMinutes,
                 timingLabel);
     }
 
