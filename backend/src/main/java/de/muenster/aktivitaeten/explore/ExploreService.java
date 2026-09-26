@@ -24,7 +24,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -115,9 +115,9 @@ public class ExploreService {
                     });
         }
 
+        // Fully random order so the results come back shuffled on every request.
+        Collections.shuffle(matches);
         return new ExploreResponse(matches.stream()
-                .sorted(Comparator.comparingInt(Match::preferenceMatches).reversed()
-                        .thenComparing(Match::travel))
                 .limit(MAX_RESULTS)
                 .map(this::toResponse)
                 .toList());
